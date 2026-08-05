@@ -18,7 +18,7 @@ The project repo and bundle must exist before any pipeline lands in it. Ingestio
 | Order | Page | Skill | Status |
 |---|---|---|---|
 | 1 | [Project repo](/docs/02-databricks-projects/project-repo/) | `databricks-dabs` | Done |
-| 2 | Ingestion Pipelines | `databricks-lakeflow-connect`, `databricks-zerobus-ingest` | Pending |
+| 2 | [Ingestion Pipelines](/docs/02-databricks-projects/ingestion-pipelines/) | `databricks-lakeflow-connect`, `databricks-zerobus-ingest` | Done |
 | 3 | ETL Pipelines | `databricks-pipelines` | Pending |
 
 Pages are linked as they are added.

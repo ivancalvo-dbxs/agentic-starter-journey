@@ -19,6 +19,7 @@ export const SECTIONS: Section[] = [
     slug: "01-infra-setup/index",
     children: [
       { label: "Pre-requisites", slug: "01-infra-setup/prerequisites" },
+      { label: "Workspaces", slug: "01-infra-setup/workspaces" },
     ],
   },
   {

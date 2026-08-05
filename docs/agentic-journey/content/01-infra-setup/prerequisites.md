@@ -92,4 +92,5 @@ AWS profile  not set         ask the user which named profile to use
 
 ## Next
 
+- **Do next:** [Workspaces](/docs/01-infra-setup/workspaces/)
 - **Reference:** [Databricks CLI authentication](https://docs.databricks.com/aws/en/dev-tools/cli/authentication)

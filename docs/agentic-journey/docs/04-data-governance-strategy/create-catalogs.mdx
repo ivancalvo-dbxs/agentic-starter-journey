@@ -107,7 +107,7 @@ A failure here with the metadata all correct usually means the storage credentia
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `PERMISSION_DENIED: User is not an owner of Metastore` | Caller cannot create catalogs | Add them to the metastore admin group, or `GRANT CREATE CATALOG ON METASTORE TO \`<principal>\`` |
+| `PERMISSION_DENIED: User is not an owner of Metastore` | Caller cannot create catalogs | Add them to the metastore admin group, or ``GRANT CREATE CATALOG ON METASTORE TO `<principal>` `` |
 | Catalog created, admins cannot see it | A service principal created and therefore owns it | Grant the human admin group `ALL_PRIVILEGES` on the catalog and `MANAGE` on the external location and storage credential, or transfer ownership |
 | Classic compute cannot read the catalog | Databricks-managed (vending machine) metastore storage, which is serverless-only | Deploy a self-managed metastore with the customer's own bucket |
 | `Storage root already in use` | Two catalogs pointed at one location | One dedicated bucket or container per catalog |

@@ -66,17 +66,17 @@ const config: Config = {
         src: 'img/databricks.ico',
       },
       items: [
+        // Plain links rather than type: 'doc'. A doc-type item activates for the
+        // whole docs plugin, so with two of them both light up on every doc page.
         {
-          type: 'doc',
-          docId: '01-prerequisites/index',
-          position: 'left',
-          label: 'Prerequisites',
-        },
-        {
-          type: 'doc',
-          docId: 'how-to-use',
+          to: '/docs/how-to-use',
           position: 'left',
           label: 'How to use',
+        },
+        {
+          to: '/docs/01-prerequisites/',
+          position: 'left',
+          label: 'Prerequisites',
         },
         {
           href: 'https://github.com/ivancalvo-dbxs/agentic-journey',

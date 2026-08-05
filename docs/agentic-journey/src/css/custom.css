@@ -1,5 +1,5 @@
 /**
- * Starter Journey – Black / Grey / Red-Orange Theme
+ * Agentic Journey - Black / Grey / Red-Orange Theme
  */
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
@@ -291,7 +291,10 @@ code {
 }
 .markdown table {
   border-radius: 8px;
-  overflow: hidden;
+  /* auto, not hidden: still clips the rounded corners, but a wide table (the
+     input and failure-mode tables on every page) stays scrollable on narrow
+     viewports instead of having its right-hand columns clipped unreachably. */
+  overflow-x: auto;
 }
 .markdown table th {
   background: rgba(255, 54, 33, 0.06);

@@ -96,7 +96,7 @@ Then run all three paths from `databricks-deployment-verification`: classic clus
 |---|---|---|
 | `400 BAD_REQUEST: Failed to get oauth access token` | SP is not an account admin, or the secret is wrong | Confirm the Account admin role on the Roles tab, regenerate the secret |
 | Provider hits the wrong host | `DATABRICKS_HOST` or `DATABRICKS_TOKEN` set in the shell | `unset` both, re-run |
-| `PERMISSION_DENIED: User is not an owner of Metastore` | The SP cannot create catalogs | Add the SP to the metastore admin group, or `GRANT CREATE CATALOG ON METASTORE TO \`<sp>\`` |
+| `PERMISSION_DENIED: User is not an owner of Metastore` | The SP cannot create catalogs | Add the SP to the metastore admin group, or ``GRANT CREATE CATALOG ON METASTORE TO `<sp>` `` |
 | Apply fails on IAM or VPC | AWS principal lacks IAM, S3, or VPC create rights | Run `precheck-aws.sh` and report the gaps rather than retrying |
 | Multiple metastores returned for the region | Orphan metastores from earlier deploys | Do not silently reuse one. Report the list and let the user choose to adopt, delete, or deploy a distinctly named new one. |
 

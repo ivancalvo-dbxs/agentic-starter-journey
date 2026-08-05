@@ -4,13 +4,18 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 
 ## What this repo is
 
-A Docusaurus 3 site at `docs/agentic-journey/` (not the repo root, so all `npm` commands run from there). See [README.md](README.md) for the layout and how it differs from [Starter Journey](https://databricks-solutions.github.io/starter-journey/), from which it was structurally cloned.
+A Next.js 16 + Tailwind 4 static site at `docs/agentic-journey/` (not the repo root, so all `npm` commands run from there). See [README.md](README.md) for the layout and how it differs from [Starter Journey](https://databricks-solutions.github.io/starter-journey/), from which it was structurally cloned.
 
 The audience is a coding agent, not a human. That is the constraint behind almost every content decision below.
 
+Deliberately plain, modelled on [agents.md](https://github.com/agentsmd/agents.md): single column, no sidebar, no navbar, no search, no theme switcher, no hero.
+The landing page is a title, a tagline, and a routing table to the 13 sections.
+Every other page ends with next-page and back-to-contents.
+Do not reintroduce site chrome.
+
 ## Writing rules for doc pages
 
-Every page follows the same five-block contract, documented for readers in `docs/agentic-journey/docs/how-to-use.mdx`: **Goal**, **Skill**, **Inputs** (with a `Source` column saying human-provided vs agent-derived), **Run**, **Verify**.
+Every page follows the same five-block contract, documented for readers in `docs/agentic-journey/content/how-to-use.md`: **Goal**, **Skill**, **Inputs** (with a `Source` column saying human-provided vs agent-derived), **Run**, **Verify**.
 
 - Verification is a runnable command plus its expected output. Never "confirm it looks right in the UI".
 - Prefer a check that would catch a *silent* failure over one that only catches an error: row counts and freshness over exit status, a masked-principal query over `SHOW POLICIES`, a metric-view-vs-raw-SQL reconciliation over "the view exists".
@@ -31,29 +36,48 @@ gh api "repos/databricks-solutions/ai-platform-kit/git/trees/HEAD?recursive=1" \
 
 ai-platform-kit skills are cited by their frontmatter `name` (`databricks-platform-provisioning`), which differs from the directory name (`platform-provisioning`). Both forms appear in the docs and both are legitimate.
 
+## How the site is wired
+
+Four files carry the whole build. Read them before changing rendering or navigation:
+
+| File | Role |
+|---|---|
+| `lib/nav.ts` | The only source of reading order. Section list for the landing table, and `nextOf()` for per-page next links. |
+| `lib/content.ts` | Markdown to HTML at build time: gray-matter frontmatter, remark-gfm, remark-directive for admonitions, Shiki for highlighting. |
+| `pages/docs/[...slug].tsx` | Catch-all that renders every content page and its two nav links. |
+| `scripts/check-links.mjs` | Link check over `out/`. Replaces Docusaurus `onBrokenLinks: 'throw'`. |
+
+Content lives in `content/` as plain `.md`. Adding a page means adding the file **and** its entry in `lib/nav.ts`; a file with no nav entry still builds and still gets a URL, but nothing links to it and it has no next link.
+
 ## Sharp edges
 
-- **webpack is pinned to 5.105.3** via `overrides` in `package.json`. 5.109.x tightened `ProgressPlugin` option validation and Docusaurus 3.9.2 fails schema validation against it, with an error that looks like a config problem rather than a version conflict. `package-lock.json` is committed to keep the set pinned. Do not remove the override without re-running `npm run build`.
-- **MDX parses `<word>` as a JSX tag.** A placeholder like `<principal>` is safe inside a normal code span, but escaped backticks (``\`<x>\```) break out of the span and fail compilation. Use double-backtick delimiters for a code span that must itself contain backticks.
-- **`onBrokenLinks: 'throw'` is deliberate** and is the link check. A green `npm run build` means no broken internal links. Never relax it to get a passing build.
-- **Two `type: 'doc'` navbar items both activate on every docs page**, because doc-type activation is per-plugin. The navbar uses plain `to:` links so activation is per-path.
-- **`.markdown table` uses `overflow-x: auto`, not `hidden`.** Hidden clips the rounded corners as intended but also clips wide tables unreachably on narrow viewports, and nearly every page here has a wide input or failure-mode table.
+- **Routes are `/docs/<path>` on purpose.** The content's internal links are all absolute `/docs/...`, inherited from Docusaurus. `pages/docs/[...slug].tsx` plus `trailingSlash: true` reproduces those exact paths, so no link rewriting was needed and none should be introduced. Changing the route shape means rewriting links in all 37 files.
+- **`content/foo/index.md` serves at `/docs/foo/`.** The `index` segment is stripped in `hrefFor()` and in `getStaticPaths`, and mapped back to disk in `getStaticProps`. A slug that is both a page and a directory would break that mapping.
+- **Anchors depend on `rehype-slug`,** which uses github-slugger, the same algorithm Docusaurus used. That is why deep links like `#3-is-the-grain-what-you-think-it-is` still resolve. Swapping the slugger silently breaks cross-page anchors; `check-links.mjs` catches it.
+- **`npm run build` includes the link check** and fails on any broken internal link or anchor. That is the replacement for `onBrokenLinks: 'throw'`. Never split the check out of `build` to get a green run.
+- **`.markdown table` uses `overflow-x: auto`.** Wide tables must stay reachable by scrolling on narrow viewports rather than being clipped, and nearly every page here has a wide input or failure-mode table.
+- **Code blocks wrap rather than scroll** (`white-space: pre-wrap` on `pre.shiki`). These are long CLI pipelines the reader must see in full; a horizontal scrollbar hides the tail of a verification command.
+- **Doc pages use `max-w-3xl`, the landing page `max-w-2xl`.** Prose width alone leaves the dense three- and four-column tables cramped.
+- **Shiki emits both themes as CSS variables** (`--shiki-light` / `--shiki-dark`) and `globals.css` picks one per `prefers-color-scheme`. There is no theme switcher; dark mode follows the OS.
 
 ## Verification before calling doc work done
 
 From `docs/agentic-journey/`:
 
 ```bash
-npm run build       # link check; must pass with onBrokenLinks: 'throw' intact
+npm run build       # static export plus the internal link and anchor check
 npm run typecheck
 ```
 
-Then check: every `sidebars.ts` entry resolves to a real doc and every doc is reachable from the sidebar; no `starter-journey` strings outside intentional external fallback links; no references to assets not in `static/img/` (only the logo and favicons are kept); every cited skill name resolves upstream.
+Then check: every `lib/nav.ts` slug resolves to a real file in `content/` and every file has a nav entry; no `starter-journey` strings outside intentional external fallback links; no references to assets not in `public/img/` (only the favicons are kept); every cited skill name resolves upstream.
+
+To walk the built site: `npm run serve`, which serves `out/` (note the site lives under the `/agentic-journey/` base path, so the useful URL is `http://localhost:3000/agentic-journey/`).
 
 ## Decisions carried from the initial build
 
-- **`StarterJourneyProgress` and its CSS tokens were dropped**, not ported. A visual progress ladder is human scaffolding; it carries no information an agent can act on. The fork-track sidebar CSS that styled it went with it.
-- **No content images.** Only `databricks-logo.png` (used by `HeaderAnimation`), `databricks.ico`, and `databricks-logo-orange.png` (favicon) are kept. No architecture diagram earned its place: prose plus a code block said it better for a machine reader.
+- **Plain markdown, not MDX.** The content uses no imports, no JSX, and no components, so MDX bought nothing and cost a compile step. A useful consequence: `<name>`-style placeholders are ordinary text rather than JSX tags that must be escaped, which was a standing sharp edge under MDX.
+- **`StarterJourneyProgress` and its CSS tokens were dropped**, not ported. A visual progress ladder is human scaffolding; it carries no information an agent can act on.
+- **No content images.** Only `databricks.ico` and `databricks-logo-orange.png` (favicon) are kept. No architecture diagram earned its place: prose plus a code block said it better for a machine reader.
 - **Analytics were dropped entirely**, not re-pointed. Starter Journey's gtag block and `gtag-shim` client module carry its tracking ID.
 - **Genie Agents live in section 8, not section 10.** They read the metric views built there. Section 10 covers document and retrieval surfaces.
 - **Section 10 (Agents) scope is a judgement call**, since the source plan did not specify it. Flagged as such on the section index page itself.

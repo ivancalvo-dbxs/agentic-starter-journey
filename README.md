@@ -6,7 +6,9 @@ Every page is written for a machine reader: goal, required inputs, the skill to 
 
 ## What this is
 
-A Docusaurus site at `docs/agentic-journey/`. A user points an agent (Claude Code, Codex, OpenCode, Cursor) at a page URL and asks for the outcome. The agent reads the page, collects the listed inputs from the user, invokes the named skill, and verifies the result.
+A Next.js static site at `docs/agentic-journey/`. A user points an agent (Claude Code, Codex, OpenCode, Cursor) at a page URL and asks for the outcome. The agent reads the page, collects the listed inputs from the user, invokes the named skill, and verifies the result.
+
+The site is deliberately plain: single column, no sidebar, no navbar, no search. The landing page is a title, a tagline, and a routing table to the 13 sections. Every other page ends with a next-page link and a link back to the contents.
 
 The journey draws on two upstream skill libraries. Neither is vendored here.
 
@@ -35,16 +37,17 @@ Where no agentic path exists, the page links the Starter Journey page and says p
 ```bash
 cd docs/agentic-journey
 npm install
-npm run start
+npm run dev
 ```
 
 The site opens at `http://localhost:3000/agentic-journey/`.
 
 | Command | Purpose |
 |---|---|
-| `npm run build` | Production build. Fails on any broken internal link (`onBrokenLinks: 'throw'`). |
+| `npm run build` | Static export to `out/`, then the internal link and anchor check. Fails on any broken link. |
+| `npm run check-links` | Link check alone, over an existing `out/`. |
 | `npm run typecheck` | TypeScript check. |
-| `npm run serve` | Serve the production build. |
+| `npm run serve` | Serve the static export. |
 
 ## Repository layout
 
@@ -52,12 +55,15 @@ The site opens at `http://localhost:3000/agentic-journey/`.
 agentic-journey/
 ├── AGENTS.md                      ← instructions for agents editing this repo
 ├── README.md
-└── docs/agentic-journey/          ← Docusaurus project root
-    ├── docusaurus.config.ts
-    ├── sidebars.ts                ← manually managed navigation
-    ├── src/                       ← components, CSS, homepage
-    ├── static/img/                ← logo and favicon only
-    └── docs/                      ← the journey pages (.mdx)
+├── .github/workflows/deploy.yml   ← build and publish to GitHub Pages
+└── docs/agentic-journey/          ← Next.js project root
+    ├── content/                   ← the journey pages (.md)
+    ├── lib/nav.ts                 ← reading order and the landing page table
+    ├── lib/content.ts             ← markdown to HTML at build time
+    ├── pages/                     ← landing page and the /docs catch-all route
+    ├── scripts/check-links.mjs    ← internal link and anchor check
+    ├── styles/globals.css         ← the whole visual layer
+    └── public/                    ← favicons and .nojekyll
 ```
 
 See [AGENTS.md](AGENTS.md) before editing.

@@ -2,11 +2,12 @@
 docs/agentic-journey/node_modules
 
 # Production
-docs/agentic-journey/build
+docs/agentic-journey/out
 
 # Generated files
-docs/agentic-journey/.docusaurus
-docs/agentic-journey/.cache-loader
+docs/agentic-journey/.next
+docs/agentic-journey/next-env.d.ts
+docs/agentic-journey/tsconfig.tsbuildinfo
 
 # Misc
 .DS_Store

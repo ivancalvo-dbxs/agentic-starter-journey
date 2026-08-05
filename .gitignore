@@ -1,0 +1,26 @@
+# Dependencies
+docs/agentic-journey/node_modules
+
+# Production
+docs/agentic-journey/build
+
+# Generated files
+docs/agentic-journey/.docusaurus
+docs/agentic-journey/.cache-loader
+
+# Misc
+.DS_Store
+
+docs/agentic-journey/.env.local
+docs/agentic-journey/.env.development.local
+docs/agentic-journey/.env.test.local
+docs/agentic-journey/.env.production.local
+
+docs/agentic-journey/npm-debug.log*
+docs/agentic-journey/yarn-debug.log*
+docs/agentic-journey/yarn-error.log*
+
+# Local agent tooling (not required in the repo)
+.superpowers/
+.cursor/
+.claude/

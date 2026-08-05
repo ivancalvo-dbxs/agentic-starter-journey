@@ -1,2 +1,63 @@
-# agentic-journey
-Agentic Starter Journey
+# Agentic Journey
+
+Agent-facing runbooks that take a coding agent from an empty Databricks account to a deployed, bundle-defined project.
+
+Every page is written for a machine reader: goal, required inputs, the skill to invoke, and a runnable verification check. No screenshots, no click-by-click UI walkthroughs, no video embeds.
+
+## What this is
+
+A Docusaurus site at `docs/agentic-journey/`. A user points an agent (Claude Code, Codex, OpenCode, Cursor) at a page URL and asks for the outcome. The agent reads the page, collects the listed inputs from the user, invokes the named skill, and verifies the result.
+
+The journey draws on two upstream skill libraries. Neither is vendored here.
+
+| Library | Covers | Repo |
+|---|---|---|
+| **ai-platform-kit** | Workspaces, Unity Catalog metastore and catalogs, groups and service principals, storage credentials, external locations, private networking, workspace config | [databricks-solutions/ai-platform-kit](https://github.com/databricks-solutions/ai-platform-kit) |
+| **databricks-agent-skills** | Pipelines, jobs, DABs, DBSQL, metric views, AI/BI dashboards, Genie Agents, ML training, model serving, vector search, Agent Bricks | [databricks/databricks-agent-skills](https://github.com/databricks/databricks-agent-skills) |
+
+## How it differs from Starter Journey
+
+This repo is structurally cloned from [Starter Journey](https://databricks-solutions.github.io/starter-journey/), which teaches a human to set up Databricks by clicking through the UI. Same journey, different reader.
+
+| | Starter Journey | Agentic Journey |
+|---|---|---|
+| Reader | Human | Coding agent |
+| Execution | Person clicks through consoles and portals | Agent invokes a skill and runs CLI commands |
+| Verification | "Confirm the workspace shows Running in the console" | A CLI command plus its expected output |
+| Content | Screenshots, video walkthroughs, concept explainers | Inputs table, skill invocation, verification command |
+| Onboarding sections | `01-get-started`, `02-before-you-start` (foundations, cloud tenant) | Dropped. Replaced by `01-prerequisites`, which checks the CLI and both skill libraries |
+| Deploy paths | Manual / Terraform / SRA per cloud | The agentic path, with a link to the Starter Journey page for the manual fallback |
+
+Where no agentic path exists, the page links the Starter Journey page and says plainly that the step is manual.
+
+## Running the site locally
+
+```bash
+cd docs/agentic-journey
+npm install
+npm run start
+```
+
+The site opens at `http://localhost:3000/agentic-journey/`.
+
+| Command | Purpose |
+|---|---|
+| `npm run build` | Production build. Fails on any broken internal link (`onBrokenLinks: 'throw'`). |
+| `npm run typecheck` | TypeScript check. |
+| `npm run serve` | Serve the production build. |
+
+## Repository layout
+
+```
+agentic-journey/
+├── AGENTS.md                      ← instructions for agents editing this repo
+├── README.md
+└── docs/agentic-journey/          ← Docusaurus project root
+    ├── docusaurus.config.ts
+    ├── sidebars.ts                ← manually managed navigation
+    ├── src/                       ← components, CSS, homepage
+    ├── static/img/                ← logo and favicon only
+    └── docs/                      ← the journey pages (.mdx)
+```
+
+See [AGENTS.md](AGENTS.md) before editing.

@@ -28,7 +28,9 @@ export const SECTIONS: Section[] = [
     number: 2,
     label: "Databricks Projects",
     slug: "02-databricks-projects/index",
-    children: [],
+    children: [
+      { label: "Project repo", slug: "02-databricks-projects/project-repo" },
+    ],
   },
 ];
 

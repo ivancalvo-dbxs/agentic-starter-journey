@@ -21,6 +21,7 @@ export const SECTIONS: Section[] = [
       { label: "Pre-requisites", slug: "01-infra-setup/prerequisites" },
       { label: "Workspaces", slug: "01-infra-setup/workspaces" },
       { label: "Catalogs", slug: "01-infra-setup/catalogs" },
+      { label: "Cloud Object Storage access", slug: "01-infra-setup/cloud-object-storage" },
     ],
   },
   {

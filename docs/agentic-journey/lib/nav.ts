@@ -17,7 +17,9 @@ export const SECTIONS: Section[] = [
     number: 1,
     label: "Infra Setup",
     slug: "01-infra-setup/index",
-    children: [],
+    children: [
+      { label: "Pre-requisites", slug: "01-infra-setup/prerequisites" },
+    ],
   },
   {
     number: 2,

@@ -19,7 +19,7 @@ The order is load-bearing. Prerequisites must pass before workspaces can be crea
 |---|---|---|---|
 | 1 | [Pre-requisites](/docs/01-infra-setup/prerequisites/) | (check page) | Done |
 | 2 | [Workspaces](/docs/01-infra-setup/workspaces/) | `databricks-platform-provisioning` | Done |
-| 3 | Catalogs | `databricks-unity-catalog-setup` | Pending |
+| 3 | [Catalogs](/docs/01-infra-setup/catalogs/) | `databricks-unity-catalog-setup` | Done |
 | 4 | Cloud Object Storage access | `databricks-unity-catalog-setup` | Pending |
 
 Pages are linked as they are added.

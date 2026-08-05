@@ -123,5 +123,6 @@ Then run all three paths from `databricks-deployment-verification`: classic clus
 
 ## Next
 
+- **Do next:** [Catalogs](/docs/01-infra-setup/catalogs/)
 - **Manual fallback:** [Starter Journey: create workspaces](https://databricks-solutions.github.io/starter-journey/docs/03-infra-setup/create-workspaces/)
 - **Reference:** [Databricks Terraform provider](https://registry.terraform.io/providers/databricks/databricks/latest/docs)

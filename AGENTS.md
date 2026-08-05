@@ -71,7 +71,7 @@ npm run typecheck
 
 Then check: every `lib/nav.ts` slug resolves to a real file in `content/` and every file has a nav entry; no `starter-journey` strings outside intentional external fallback links; no references to assets not in `public/img/` (only the favicons are kept); every cited skill name resolves upstream.
 
-To walk the built site: `npm run serve`, which serves `out/` (note the site lives under the `/agentic-journey/` base path, so the useful URL is `http://localhost:3000/agentic-journey/`).
+To walk the built site: `npm run serve`, which serves `out/` (note the site lives under the `/agentic-starter-journey/` base path, so the useful URL is `http://localhost:3000/agentic-starter-journey/`).
 
 ## Decisions carried from the initial build
 

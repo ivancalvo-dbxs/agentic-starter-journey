@@ -2,12 +2,12 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
+  contents: write
   id-token: write
 
 # Let an in-flight deploy finish rather than cancelling it mid-publish.
@@ -15,23 +15,28 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
-defaults:
-  run:
-    working-directory: docs/agentic-journey
-
 jobs:
   build:
+    name: Build site
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs/agentic-journey
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: docs/agentic-journey/package-lock.json
 
       - run: npm ci
+
+      # npm can exit 0 after a failed install (npm/cli#9386), leaving
+      # node_modules incomplete. Fail here rather than in a later step.
+      - name: Verify install
+        run: node -e "require.resolve('next'); require.resolve('typescript')"
 
       - run: npm run typecheck
 
@@ -46,11 +51,64 @@ jobs:
           path: docs/agentic-journey/out
 
   deploy:
+    name: Deploy to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  release:
+    name: Tag and release
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute next version
+        id: version
+        run: |
+          set -euo pipefail
+
+          LATEST=$(git tag --list 'v*.*.*' --sort=-v:refname | head -1)
+
+          if [ -z "$LATEST" ]; then
+            NEXT="v0.1.0"
+          else
+            MAJOR=$(echo "$LATEST" | sed 's/^v//' | cut -d. -f1)
+            MINOR=$(echo "$LATEST" | sed 's/^v//' | cut -d. -f2)
+            NEXT="v${MAJOR}.$((MINOR + 1)).0"
+          fi
+
+          echo "tag=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "Next version: $NEXT"
+
+      - name: Create release branch and tag
+        run: |
+          set -euo pipefail
+
+          TAG="${{ steps.version.outputs.tag }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "release/$TAG"
+          git push origin "release/$TAG"
+
+          git tag "$TAG"
+          git push origin "$TAG"
+
+      - name: Create GitHub Release
+        run: gh release create "${{ steps.version.outputs.tag }}" --generate-notes --title "${{ steps.version.outputs.tag }}"
+        env:
+          GH_TOKEN: ${{ github.token }}

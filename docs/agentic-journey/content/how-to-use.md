@@ -47,7 +47,7 @@ A user sends a page URL and asks what you need from them.
 
 ```text
 I want to create an AWS workspace as listed on
-https://ivancalvo-dbxs.github.io/agentic-journey/docs/02-infra-setup/create-workspaces/aws/
+https://ivancalvo-dbxs.github.io/agentic-starter-journey/docs/02-infra-setup/create-workspaces/aws/
 
 Let me know what input values you need from me and how should I fill those out.
 ```

@@ -6,7 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const OUT = path.join(import.meta.dirname, "..", "out");
-const BASE = "/agentic-journey";
+const BASE = "/agentic-starter-journey";
 
 if (!fs.existsSync(OUT)) {
   console.error("out/ not found. Run `npm run build` first.");

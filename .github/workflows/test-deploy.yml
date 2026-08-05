@@ -1,0 +1,37 @@
+name: Test deployment
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test-deploy:
+    name: Test deployment
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs/agentic-journey
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: docs/agentic-journey/package-lock.json
+
+      - run: npm ci
+
+      # npm can exit 0 after a failed install (npm/cli#9386), leaving
+      # node_modules incomplete. Fail here rather than in a later step.
+      - name: Verify install
+        run: node -e "require.resolve('next'); require.resolve('typescript')"
+
+      - run: npm run typecheck
+
+      - name: Test build website
+        run: npm run build

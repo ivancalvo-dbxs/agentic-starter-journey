@@ -40,7 +40,7 @@ npm install
 npm run dev
 ```
 
-The site opens at `http://localhost:3000/agentic-journey/`.
+The site opens at `http://localhost:3000/agentic-starter-journey/`.
 
 | Command | Purpose |
 |---|---|

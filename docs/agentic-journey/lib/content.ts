@@ -93,8 +93,8 @@ function getHighlighter() {
  * them itself). Without this plugin those hrefs resolve against the host
  * root and 404 under the `/agentic-starter-journey` basePath.
  *
- * Rewrite `/docs/...` (and `/docs/...#anchor`) to `${BASE_PATH}/docs/...`.
- * External links, anchors, mailto, and already-prefixed hrefs are left alone.
+ * Rewrite `/`, `/#anchor`, and `/docs/...` to `${BASE_PATH}...`.
+ * External links, bare anchors, mailto, and already-prefixed hrefs are left alone.
  */
 function rehypePrefixBasePath() {
   return (tree: HastRoot) => {
@@ -102,7 +102,8 @@ function rehypePrefixBasePath() {
       if (node.tagName !== "a") return;
       const href = node.properties?.href;
       if (typeof href !== "string") return;
-      if (!href.startsWith("/docs/")) return;
+      const isRoot = href === "/" || href.startsWith("/#");
+      if (!isRoot && !href.startsWith("/docs/")) return;
       node.properties!.href = `${BASE_PATH}${href}`;
     });
   };

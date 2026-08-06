@@ -8,15 +8,21 @@ export type Section = {
   label: string;
   /** content/ path without .md, e.g. "01-infra-setup/index". */
   slug: string;
+  /** One-line "pick if" criterion for the landing router. */
+  pickIf: string;
   /** Child pages, in reading order. Added per-task as pages land. */
   children?: { label: string; slug: string }[];
 };
+
+/** Meta page: page-contract legend. Not a numbered section on the landing. */
+export const HOW_TO_USE = { label: "How to use this site", slug: "how-to-use" };
 
 export const SECTIONS: Section[] = [
   {
     number: 1,
     label: "Infra Setup",
     slug: "01-infra-setup/index",
+    pickIf: "No workspace yet. Account and metastore work.",
     children: [
       { label: "Pre-requisites", slug: "01-infra-setup/prerequisites" },
       { label: "Workspaces", slug: "01-infra-setup/workspaces" },
@@ -28,6 +34,7 @@ export const SECTIONS: Section[] = [
     number: 2,
     label: "Databricks Projects",
     slug: "02-databricks-projects/index",
+    pickIf: "Workspace ready. Deploy a bundle-defined project.",
     children: [
       { label: "Project repo", slug: "02-databricks-projects/project-repo" },
       { label: "Ingestion Pipelines", slug: "02-databricks-projects/ingestion-pipelines" },
@@ -36,11 +43,14 @@ export const SECTIONS: Section[] = [
   },
 ];
 
-/** Flattened reading order: every page, depth-first. */
-export const READING_ORDER: { label: string; slug: string }[] = SECTIONS.flatMap((s) => [
-  { label: `${s.number}. ${s.label}`, slug: s.slug },
-  ...(s.children ?? []),
-]);
+/** Flattened reading order: how-to-use first, then every section page depth-first. */
+export const READING_ORDER: { label: string; slug: string }[] = [
+  HOW_TO_USE,
+  ...SECTIONS.flatMap((s) => [
+    { label: `${s.number}. ${s.label}`, slug: s.slug },
+    ...(s.children ?? []),
+  ]),
+];
 
 /** URL path for a slug. "foo/index" serves at /docs/foo/. */
 export function hrefFor(slug: string): string {

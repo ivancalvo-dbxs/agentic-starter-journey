@@ -87,6 +87,20 @@ To walk the built site: `npm run serve`, which serves `out/` (note the site live
 - **Per-cloud workspace pages were kept** because the auth inputs genuinely differ (AWS needs an account-admin SP with an OAuth secret, Azure uses `azure-cli` auth with `azure_tenant_id` on every provider block, GCP needs SA impersonation with `auth_type = "google-id"`). The manual/terraform/SRA triple collapsed to the agentic path plus a Starter Journey pointer.
 - **Metric views ship as a SQL task in a bundle job**, since they are not a DABs resource type, while dashboards and Genie Agents are native resources. Verified against `databricks/bundle-examples` `knowledge_base/`.
 
+## Section eval cycle
+
+How to prove a section (or a single page) is ready for peers: cold-start agents, feedback, rewrite, then destroy.
+
+Scope is flexible. A run may cover a whole section (example: Infra Setup end-to-end) or one leaf (example: only Cloud Object Storage against an existing workspace and catalog). Put existing assets and the exact goal in the agent brief. Do not force a full rebuild when the human already has upstream resources.
+
+1. **Serve the published site.** Agents start at `http://localhost:3000/agentic-starter-journey/` (or the deployed Pages URL). They follow the pages under test, not `content/` in git.
+2. **Fan out cold-start agents.** Local Task agents with sealed briefs and no shared conversation context. Parallelize independent matrix cells (cloud × topology, or one page × N targets). Keep briefs short: entry URL, goal, credentials/profiles, human defaults, apply pre-approval if desired, feedback path.
+3. **Primary deliverable is doc feedback.** Each agent writes a structured file (outcome, resources created, doc gaps as page → symptom → rewrite, failed Verify claims). Resource creation proves the page; rewriting the page is the point.
+4. **Synthesize, then rewrite.** Parent ranks gaps, patches the section, runs `npm run build` and `npm run typecheck` from `docs/agentic-journey/`. Refresh the served `out/` if peers hit localhost.
+5. **Leave stacks up for peer click-through** until the human says destroy. Destroy only on explicit ask. Prefer Terraform destroy from agent state dirs, then CLI cleanup of leftovers. Do not delete shared account resources (example: a pre-existing regional metastore) unless the brief says so.
+
+Worked example: Infra Setup cold-start on AWS serverless + classic (2026-08-06). Feedback drove naming gates, Verify fixes, serverless vs classic topology, and metastore-scoped catalogs. Artifacts under `~/superpowers/agentic-starter-journey/evals/` (not committed).
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.

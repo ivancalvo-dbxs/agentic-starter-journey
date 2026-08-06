@@ -6,7 +6,9 @@ import fs from "node:fs";
 import path from "node:path";
 
 const OUT = path.join(import.meta.dirname, "..", "out");
-const BASE = "/agentic-starter-journey";
+// Mirror of BASE_PATH in lib/site.ts. This script is plain ESM and cannot
+// import the TS module; keep the two in sync on repo rename.
+const BASE_PATH = "/agentic-starter-journey";
 
 if (!fs.existsSync(OUT)) {
   console.error("out/ not found. Run `npm run build` first.");
@@ -42,8 +44,17 @@ for (const file of htmlFiles) {
     if (!href.startsWith("/")) continue; // external, mailto, or in-page handled below
     const [rawPath, anchor] = href.split("#");
 
-    // Strip the basePath the export prepends to every internal link.
-    const target = rawPath.startsWith(BASE) ? rawPath.slice(BASE.length) || "/" : rawPath;
+    // Every internal link must carry the basePath prefix. Markdown links
+    // are rewritten by rehypePrefixBasePath in lib/content.ts; <Link>
+    // components get it from Next. A bare `/docs/...` href here means the
+    // rewriter missed it and the browser will 404 under the basePath.
+    if (!rawPath.startsWith(BASE_PATH)) {
+      console.error(`${rel}: internal link missing basePath prefix -> ${href}`);
+      broken++;
+      continue;
+    }
+
+    const target = rawPath.slice(BASE_PATH.length) || "/";
 
     if (!known(target)) {
       console.error(`${rel}: broken link -> ${href}`);

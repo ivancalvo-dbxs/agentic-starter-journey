@@ -9,13 +9,15 @@ A Next.js 16 + Tailwind 4 static site at `docs/agentic-journey/` (not the repo r
 The audience is a coding agent, not a human. That is the constraint behind almost every content decision below.
 
 Deliberately plain, modelled on [agents.md](https://github.com/agentsmd/agents.md): single column, no sidebar, no navbar, no search, no theme switcher, no hero.
-The landing page is a title, a tagline, and a routing table to the 13 sections.
+The landing page is a title, a tagline, a one-line pointer to `/docs/how-to-use/`, and a numbered section table with a `pickIf` criterion per row.
+No contract table and no child pages on the landing; section indexes own leaf routing.
+Hard token budgets for visible landing text: ≤150 tokens at the current section count, ≤220 at full scale.
 Every other page ends with next-page and back-to-contents.
 Do not reintroduce site chrome.
 
 ## Writing rules for doc pages
 
-Every page follows the same five-block contract, documented for readers in `docs/agentic-journey/content/how-to-use.md`: **Goal**, **Skill**, **Inputs** (with a `Source` column saying human-provided vs agent-derived), **Run**, **Verify**.
+Every page follows the same nine-block contract, documented for readers in `docs/agentic-journey/content/how-to-use.md`: **Mental Model**, **Goal**, **Prerequisites**, **Skill**, **Inputs** (with a `Source` column saying human-provided vs agent-derived), **Run**, **Verify**, **Where this fails**, **Next**.
 
 - Verification is a runnable command plus its expected output. Never "confirm it looks right in the UI".
 - Prefer a check that would catch a *silent* failure over one that only catches an error: row counts and freshness over exit status, a masked-principal query over `SHOW POLICIES`, a metric-view-vs-raw-SQL reconciliation over "the view exists".
@@ -42,16 +44,17 @@ Four files carry the whole build. Read them before changing rendering or navigat
 
 | File | Role |
 |---|---|
-| `lib/nav.ts` | The only source of reading order. Section list for the landing table, and `nextOf()` for per-page next links. |
-| `lib/content.ts` | Markdown to HTML at build time: gray-matter frontmatter, remark-gfm, remark-directive for admonitions, Shiki for highlighting. |
+| `lib/nav.ts` | The only source of reading order. Section list with `pickIf` for the landing table, `HOW_TO_USE` prepended to `READING_ORDER`, and `nextOf()` for per-page next links. |
+| `lib/site.ts` | The single source of truth for the static-export `basePath`. Imported by `next.config.ts` and `lib/content.ts`; mirrored in `scripts/check-links.mjs`. Change it here on a repo rename. |
+| `lib/content.ts` | Markdown to HTML at build time: gray-matter frontmatter, remark-gfm, remark-directive for admonitions, Shiki for highlighting, and `rehypePrefixBasePath` to rewrite internal `/docs/...` links with the basePath. |
 | `pages/docs/[...slug].tsx` | Catch-all that renders every content page and its two nav links. |
-| `scripts/check-links.mjs` | Link check over `out/`. Replaces Docusaurus `onBrokenLinks: 'throw'`. |
+| `scripts/check-links.mjs` | Link check over `out/`. Replaces Docusaurus `onBrokenLinks: 'throw'`. Fails if any internal link is missing the basePath prefix. |
 
 Content lives in `content/` as plain `.md`. Adding a page means adding the file **and** its entry in `lib/nav.ts`; a file with no nav entry still builds and still gets a URL, but nothing links to it and it has no next link.
 
 ## Sharp edges
 
-- **Routes are `/docs/<path>` on purpose.** The content's internal links are all absolute `/docs/...`, inherited from Docusaurus. `pages/docs/[...slug].tsx` plus `trailingSlash: true` reproduces those exact paths, so no link rewriting was needed and none should be introduced. Changing the route shape means rewriting links in all 37 files.
+- **Routes are `/docs/<path>` on purpose.** The content's internal links are all absolute `/docs/...`, inherited from Docusaurus. `pages/docs/[...slug].tsx` plus `trailingSlash: true` reproduces those exact paths. **Next.js only prepends `basePath` to `<Link>` components, not to raw `<a>` tags emitted from markdown**, so `rehypePrefixBasePath` in `lib/content.ts` rewrites every `/docs/...` href to `${BASE_PATH}/docs/...` at build time. Without it, table and inline links in markdown resolve against the host root and 404 under the `/agentic-starter-journey` basePath. `scripts/check-links.mjs` fails the build if any internal link is missing the prefix, so this regression cannot ship silently. Changing the route shape means rewriting links in all 37 files.
 - **`content/foo/index.md` serves at `/docs/foo/`.** The `index` segment is stripped in `hrefFor()` and in `getStaticPaths`, and mapped back to disk in `getStaticProps`. A slug that is both a page and a directory would break that mapping.
 - **Anchors depend on `rehype-slug`,** which uses github-slugger, the same algorithm Docusaurus used. That is why deep links like `#3-is-the-grain-what-you-think-it-is` still resolve. Swapping the slugger silently breaks cross-page anchors; `check-links.mjs` catches it.
 - **`npm run build` includes the link check** and fails on any broken internal link or anchor. That is the replacement for `onBrokenLinks: 'throw'`. Never split the check out of `build` to get a green run.

@@ -1,19 +1,28 @@
 ---
-sidebar_label: Project repo
-description: Create the project's own Git repo with a bundle and per-environment targets.
+description: Create the project's own Git repo with a databricks.yml bundle and dev, staging, prod targets. Validate clean before any resource lands.
 ---
 
 # Project repo
 
-**Goal:** a new Git repo containing a valid `databricks.yml` with dev, staging, and production targets, validating clean against dev.
+## Mental Model
 
-**Skill:** `databricks-dabs` (databricks-agent-skills). Read its `references/bundle-structure.md` before writing YAML.
+From the workspace edge inward, every asset lives in one Databricks Asset Bundle in one Git repo, owned by one team.
+The bundle is the deployment boundary: it carries variables for catalog, schema, and warehouse per environment, so the same YAML deploys to dev, staging, and prod.
+Create the repo now, empty of resources, and validate it before adding anything. A bundle that fails `validate` with no resources is a config problem; the same failure after three resources land is a hunt.
 
-**Prerequisites:** [5. Access your data](/docs/05-access-your-data) complete. A catalog and medallion schemas exist.
+## Goal
 
-One repo per Databricks project.
-Create it now, empty of resources, and validate it before adding the pipeline.
-A bundle that fails `validate` with no resources in it is a config problem; the same failure after three resources land is a hunt.
+A new Git repo containing a valid `databricks.yml` with dev, staging, and production targets, validating clean against dev.
+
+## Prerequisites
+
+- [Infra Setup](/docs/01-infra-setup/) complete: workspaces, a metastore, catalogs with medallion schemas, and governed object storage access.
+- A configured Databricks CLI profile that reaches the dev workspace.
+- A deployment service principal for staging and production (created during Infra Setup). Staging and prod run as this, not as a person.
+
+## Skill
+
+`databricks-dabs` (databricks-agent-skills). Read its `references/bundle-structure.md` before writing YAML.
 
 ## Inputs
 
@@ -21,10 +30,10 @@ A bundle that fails `validate` with no resources in it is a config problem; the 
 |---|---|---|
 | Project name | Human | Becomes the bundle name and the repo name. Kebab-case, `marketing-c360`. |
 | Repo location | Human | Where to create it, and whether they want a remote. Ask before creating anything on GitHub. |
-| Target catalogs per environment | Human | From [Create catalogs](/docs/04-data-governance-strategy/create-catalogs). Usually `dev`, `stg`, `prod`, or the prefixed variants. |
-| Target schema | You derive | `<project>_bronze` / `_silver` / `_gold` |
+| Target catalogs per environment | Human | From [Catalogs](/docs/01-infra-setup/catalogs/). Usually `dev`, `stg`, `prod`, or the prefixed variants. |
+| Target schema prefix | You derive | `<project>`, with `_bronze` / `_silver` / `_gold` appended per layer |
 | Workspace host per environment | You derive | `databricks account workspaces list -o json`, then `deployment_name` |
-| Deployment service principal | You derive | The `<prefix>-deployer` SP from [Create groups](/docs/02-infra-setup/create-groups). Staging and production run as this, not as a person. |
+| Deployment service principal | You derive | The SP created during Infra Setup. Staging and production run as this. |
 
 :::warning
 Do not create a GitHub repo without asking.
@@ -32,27 +41,27 @@ Creating a repo, and especially pushing to a remote, is outward-facing and hard 
 Initialize locally with `git init`, and let the user decide on the remote.
 :::
 
-## Structure
+## Run
+
+### 1. Structure
 
 ```text
 <project>/
-├── databricks.yml            ← bundle name, variables, targets
+├── databricks.yml            bundle name, variables, targets
 ├── resources/
-│   └── <name>.pipeline.yml   ← one file per resource, added next page
+│   └── <name>.<type>.yml     one file per resource, added by later pages
 ├── src/
-│   └── ...                   ← pipeline source, notebooks, Python
+│   └── ...                   pipeline source, notebooks, Python
 ├── tests/
-│   └── ...                   ← unit tests, run by CI in section 13
-└── .github/workflows/        ← added in section 13
+│   └── ...                   unit tests, run by CI
+└── .github/workflows/        added when CI lands
 ```
 
-Resource files use `<name>.<resource_type>.yml`.
-That naming is what `databricks-dabs` expects, and it keeps `resources/` readable once a project holds a pipeline, three jobs, a dashboard, and a Genie Agent.
+Resource files use `<name>.<resource_type>.yml`. That naming is what `databricks-dabs` expects, and it keeps `resources/` readable once a project holds a pipeline, jobs, a dashboard, and an agent.
 
-## The bundle
+### 2. The bundle
 
-Parameterize catalog, schema, and warehouse as variables.
-Hardcoding them into resources is what makes a bundle undeployable to a second environment, and section 13 passes these same variables from CI environments.
+Parameterize catalog, schema, and warehouse as variables. Hardcoding them into resources is what makes a bundle undeployable to a second environment.
 
 ```yaml
 # databricks.yml
@@ -104,26 +113,18 @@ targets:
 `mode: development` prefixes resource names with the deploying user and pauses schedules, so two engineers can deploy to dev without colliding.
 `mode: production` does neither, which is why staging and production must run as a service principal rather than as whoever deployed last.
 
-## Run
+### 3. Init and validate
 
 ```bash
 mkdir <project> && cd <project>
 git init
-
-# write databricks.yml and create the directories
 mkdir -p resources src tests
-
+# write databricks.yml
 databricks bundle validate --strict --target dev --profile <name>
-```
-
-`--strict` is the point.
-Without it, unknown keys pass silently and surface as a confusing deploy failure later.
-
-Then commit before adding resources, so the working bundle is a recoverable point:
-
-```bash
 git add -A && git commit -m "Bundle scaffold with dev, staging, prod targets"
 ```
+
+`--strict` is the point. Without it, unknown keys pass silently and surface as a confusing deploy failure later.
 
 ## Verify
 
@@ -140,16 +141,22 @@ for t in dev staging prod; do
 done
 ```
 
-Expect the bundle name, `dev`, and the dev catalog from the first command, and `OK` for all three targets from the second.
+Expected text:
 
-A `FAIL` on staging or production here is usually the service principal not existing or not having workspace access, not a YAML error.
-Check with `databricks bundle validate --target staging` and read the message rather than guessing.
+```text
+{"name":"<project>","target":"dev","catalog":"dev"}
+dev: OK
+staging: OK
+prod: OK
+```
+
+A `FAIL` on staging or production here is usually the service principal not existing or not having workspace access, not a YAML error. Run `databricks bundle validate --target staging` and read the message rather than guessing.
 
 ## Where this fails
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `unknown command "bundle"` | Legacy pip CLI on PATH | See [Databricks CLI](/docs/01-prerequisites/databricks-cli) |
+| `unknown command "bundle"` | Legacy pip CLI on PATH | Install the modern Databricks CLI |
 | `cannot resolve variable` | Variable used in a resource but not declared in `databricks.yml` | Declare it under `variables:` |
 | Validate passes on dev, fails on prod | Target missing a variable value, or the SP has no workspace access | Set the variable per target; assign the SP to the workspace |
 | Two engineers overwrite each other in dev | Dev target not in `mode: development` | Set it. Development mode prefixes resources per user. |
@@ -157,5 +164,5 @@ Check with `databricks bundle validate --target staging` and read the message ra
 
 ## Next
 
-- **Do next:** [Pipeline resource](/docs/06-build-first-pipeline/pipeline-resource)
+- **Do next:** [Ingestion Pipelines](/docs/02-databricks-projects/ingestion-pipelines/)
 - **Reference:** [Bundle configuration](https://docs.databricks.com/aws/en/dev-tools/bundles/settings)

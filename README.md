@@ -8,7 +8,7 @@ Every page is written for a machine reader: goal, required inputs, the skill to 
 
 A Next.js static site at `docs/agentic-journey/`. A user points an agent (Claude Code, Codex, OpenCode, Cursor) at a page URL and asks for the outcome. The agent reads the page, collects the listed inputs from the user, invokes the named skill, and verifies the result.
 
-The site is deliberately plain: single column, no sidebar, no navbar, no search. The landing page is a title, a tagline, and a routing table to the 13 sections. Every other page ends with a next-page link and a link back to the contents.
+The site is deliberately plain: single column, no sidebar, no navbar, no search. The landing page is a title, a tagline, a pointer to the page contract, and a numbered section table with pick-if criteria. Every other page ends with a next-page link and a link back to the contents.
 
 The journey draws on two upstream skill libraries. Neither is vendored here.
 

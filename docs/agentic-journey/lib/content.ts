@@ -12,6 +12,7 @@ import { visit } from "unist-util-visit";
 import { createHighlighter } from "shiki";
 import type { Root } from "mdast";
 import type { Root as HastRoot, Element } from "hast";
+import { BASE_PATH } from "./site";
 
 const CONTENT_DIR = path.join(process.cwd(), "content");
 
@@ -85,6 +86,29 @@ function getHighlighter() {
   return highlighterPromise;
 }
 
+/**
+ * Next.js prepends basePath to <Link> components but NOT to raw <a> tags
+ * emitted from markdown. Internal markdown links are written as
+ * `/docs/...` absolute paths (inherited from Docusaurus, which rewrote
+ * them itself). Without this plugin those hrefs resolve against the host
+ * root and 404 under the `/agentic-starter-journey` basePath.
+ *
+ * Rewrite `/`, `/#anchor`, and `/docs/...` to `${BASE_PATH}...`.
+ * External links, bare anchors, mailto, and already-prefixed hrefs are left alone.
+ */
+function rehypePrefixBasePath() {
+  return (tree: HastRoot) => {
+    visit(tree, "element", (node: Element) => {
+      if (node.tagName !== "a") return;
+      const href = node.properties?.href;
+      if (typeof href !== "string") return;
+      const isRoot = href === "/" || href.startsWith("/#");
+      if (!isRoot && !href.startsWith("/docs/")) return;
+      node.properties!.href = `${BASE_PATH}${href}`;
+    });
+  };
+}
+
 export type Page = {
   slug: string;
   title: string;
@@ -122,6 +146,7 @@ export async function getPage(slug: string): Promise<Page> {
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeSlug)
     .use(rehypeShiki, await getHighlighter())
+    .use(rehypePrefixBasePath)
     .use(rehypeStringify, { allowDangerousHtml: true })
     .process(body);
 

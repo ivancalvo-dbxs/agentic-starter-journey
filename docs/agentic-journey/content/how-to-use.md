@@ -17,7 +17,7 @@ The agent reads the page, collects the inputs, invokes the skill, and runs the v
 | Prerequisites | What must be true before running. Agent checks first. |
 | Skill | The exact skill to invoke, and which library ships it. |
 | Inputs | Table of values. Source says human-provided or agent-derived. |
-| Run | The commands or skill invocation. |
+| Run | The commands or skill invocation. When the page has a Naming step, present ≤3 naming options, wait for a pick, then map them to Terraform inputs before writing HCL. |
 | Verify | A runnable check plus its expected output. |
 | Where this fails | Silent-failure traps: symptom, cause, fix. |
 | Next | Do next, manual fallback, reference. |

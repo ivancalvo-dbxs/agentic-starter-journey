@@ -22,7 +22,6 @@ docs/agentic-starter-journey/yarn-debug.log*
 docs/agentic-starter-journey/yarn-error.log*
 
 # Local agent tooling (ignore by default; commit Captain skill for peers)
-.superpowers/
 .cursor/*
 !.cursor/skills/
 .cursor/skills/*

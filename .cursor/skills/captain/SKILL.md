@@ -22,7 +22,7 @@ Triggers: “Captain, …”, create/rewrite a section, cold-start test a page, 
 ## Loop
 
 1. **Mission plan** (short). Pages under test, existing assets, crew matrix, verify checkpoints, destroy default = leave up. Proceed unless the human interrupts. Do **not** ask for terraform plan/apply approval.
-2. **Fan out Crew.** Sealed briefs. No shared conversation context. Entry = published site (`http://localhost:3000/agentic-starter-journey/` or Pages URL), not `content/` in git. Feedback path under `~/superpowers/agentic-starter-journey/evals/<date>-<section>/<agent-id>.md`.
+2. **Fan out Crew.** Sealed briefs. No shared conversation context. Entry = published site (`http://localhost:3000/agentic-starter-journey/` or Pages URL), not `content/` in git. Feedback = local untracked file; set an absolute path in each brief (do not hard-code a shared home-folder layout).
 3. **Crew auto-applies.** Never gate on human yes for apply. Auth/permission failures are useful signal; put them in feedback as doc gaps when the site should have caught them.
 4. **Checkpoint after each Crew.** Report URLs/IDs and what to verify. Wait for human **pass** or **fail** (+ why).
 5. **On fail.** Classify: doc gap vs auth/perm vs bad brief. Re-brief Crew and/or rewrite docs, then continue.

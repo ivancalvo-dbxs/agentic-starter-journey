@@ -50,7 +50,9 @@ Auto-apply is intentional: auth and permission blockers surface faster when Crew
 
 ## Feedback file shape
 
-One file per Crew agent. Suggested path: `~/superpowers/agentic-starter-journey/evals/<date>-<section>/<agent-id>.md` (home folder, not committed).
+One file per Crew agent.
+Keep it local and untracked (do not commit).
+Captain sets an absolute path in each Crew brief.
 
 Required sections:
 
@@ -64,5 +66,5 @@ Required sections:
 
 Infra Setup cold-start on AWS serverless + classic (2026-08-06).
 Feedback drove naming gates, Verify fixes, serverless vs classic topology, and metastore-scoped catalogs.
-Artifacts lived under `~/superpowers/agentic-starter-journey/evals/` and were not committed.
+Feedback artifacts were kept local and not committed.
 Later sessions should open as Captain sessions using this handbook and the Captain skill.

@@ -21,7 +21,15 @@ docs/agentic-journey/npm-debug.log*
 docs/agentic-journey/yarn-debug.log*
 docs/agentic-journey/yarn-error.log*
 
-# Local agent tooling (not required in the repo)
+# Local agent tooling (ignore by default; commit Captain skill for peers)
 .superpowers/
-.cursor/
-.claude/
+.cursor/*
+!.cursor/skills/
+.cursor/skills/*
+!.cursor/skills/captain/
+!.cursor/skills/captain/**
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/captain/
+!.claude/skills/captain/**

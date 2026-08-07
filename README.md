@@ -49,9 +49,18 @@ The site opens at `http://localhost:3000/agentic-starter-journey/`.
 | `npm run typecheck` | TypeScript check. |
 | `npm run serve` | Serve the static export. |
 
-## Section eval (agents)
+## Section eval (Captain)
 
-If the task is to create a new section, cold-start test a page or feature, fan out agents, collect feedback, rewrite from that feedback, or destroy eval stacks, follow [SECTION-EVAL.md](SECTION-EVAL.md).
+Open with: “Captain, the goal of this session is …”.
+
+You verify outcomes. The Captain agent fans out cold-start Crew, auto-applies, pauses for your pass/fail after each Crew, then rewrites docs from feedback.
+
+Handbook: [SECTION-EVAL.md](SECTION-EVAL.md)
+
+Captain skill (in-repo):
+
+- Cursor: [`.cursor/skills/captain/SKILL.md`](.cursor/skills/captain/SKILL.md)
+- Claude Code: [`.claude/skills/captain/SKILL.md`](.claude/skills/captain/SKILL.md)
 
 For ordinary edits to this repo (prose, nav, build), start at [AGENTS.md](AGENTS.md).
 
@@ -60,7 +69,9 @@ For ordinary edits to this repo (prose, nav, build), start at [AGENTS.md](AGENTS
 ```
 agentic-journey/
 ├── AGENTS.md                      ← instructions for agents editing this repo
-├── SECTION-EVAL.md                ← cold-start test → feedback → rewrite → destroy
+├── SECTION-EVAL.md                ← Captain handbook (You → Captain → Crew)
+├── .cursor/skills/captain/        ← Captain skill (Cursor)
+├── .claude/skills/captain/        ← Captain skill (Claude Code)
 ├── README.md
 ├── .github/workflows/deploy.yml   ← build and publish to GitHub Pages
 └── docs/agentic-journey/          ← Next.js project root
@@ -74,4 +85,4 @@ agentic-journey/
 ```
 
 See [AGENTS.md](AGENTS.md) before editing.
-See [SECTION-EVAL.md](SECTION-EVAL.md) before fanning out eval agents.
+See [SECTION-EVAL.md](SECTION-EVAL.md) before Captain / eval sessions.

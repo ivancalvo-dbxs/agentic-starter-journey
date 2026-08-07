@@ -89,7 +89,8 @@ To walk the built site: `npm run serve`, which serves `out/` (note the site live
 
 ## Section eval cycle
 
-For creating or rewriting a section, cold-start testing a page, fanning out agents, collecting feedback, or destroying eval stacks, follow [SECTION-EVAL.md](SECTION-EVAL.md).
+For creating or rewriting a section, cold-start testing a page, fanning out agents, collecting feedback, destroying eval stacks, or a “Captain, …” session, follow [SECTION-EVAL.md](SECTION-EVAL.md).
+Load the Captain skill from `.cursor/skills/captain/` (Cursor) or `.claude/skills/captain/` (Claude Code).
 Do not expand that workflow here.
 
 ## Maintaining this file

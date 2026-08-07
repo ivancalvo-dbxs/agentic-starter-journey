@@ -1,16 +1,19 @@
 # Section eval cycle (Captain handbook)
 
+This handbook is the eval and rewrite loop after pages exist on the published site.
+To author a new leaf from scratch, follow [AGENTS.md](AGENTS.md) (Writing a new section or leaf).
+Open a Captain session when you are ready to prove that leaf with cold Crew.
+
 How to prove a section (or a single page) is ready for peers: Captain supervises cold-start Crew, you verify outcomes, then feedback rewrites the site.
 
 Use this file when the task is any of:
 
-- Create or substantially rewrite a journey section or leaf page
-- Test whether a page or feature works for a coding agent with no prior context
+- Test whether a published page or feature works for a coding agent with no prior context
 - Fan out agents across clouds, topologies, or targets
 - Collect doc feedback, rewrite from that feedback, or destroy eval stacks
 - Open a session with “Captain, the goal of this session is …”
 
-For day-to-day edits to existing prose or site wiring, start at [AGENTS.md](AGENTS.md) instead.
+For blank-page authorship or day-to-day prose/nav edits, start at [AGENTS.md](AGENTS.md) instead.
 
 Captain skill (load in the parent chat):
 
@@ -36,9 +39,16 @@ Flexible by design. A run may cover a whole section (example: Infra Setup end-to
 Put existing assets and the exact goal in the Captain brief / Crew briefs.
 Do not force a full rebuild when the human already has upstream resources.
 
+## When the topic already has a leaf
+
+Do not create a duplicate slug or parallel page.
+Crew evals the existing leaf and writes feedback.
+Captain rewrites that leaf only after feedback synthesis (and human verify when resources were created).
+If the goal was “create” and the leaf already exists, state that in the mission plan and switch to eval-then-rewrite.
+
 ## Cycle
 
-1. **Serve the published site.** Crew starts at `http://localhost:3000/agentic-starter-journey/` (or the deployed Pages URL). They follow the pages under test, not `content/` in git.
+1. **Serve this repo’s published site.** From `docs/agentic-starter-journey/`: `npm run build && npm run serve`. Before fanning out Crew, confirm the entry URL is this site (Agentic Starter Journey title/copy), not another app on the same port. If wrong, free the port and re-serve `out/`, or use the deployed Pages URL. Crew starts at `http://localhost:3000/agentic-starter-journey/` (or Pages). They follow the pages under test, not `content/` in git.
 2. **Captain states a mission plan**, then proceeds unless you interrupt. No terraform plan/apply approvals from you.
 3. **Fan out Crew.** Parallelize independent matrix cells (cloud × topology, or one page × N targets). Briefs stay short: entry URL, goal, credentials/profiles, human defaults, auto-apply, feedback path.
 4. **After each Crew, Captain checkpoints you.** You verify the real object (workspace, catalog, pipeline, DABs). Pass continues. Fail + why → Captain classifies (doc gap vs auth/perm vs bad brief) and re-briefs or rewrites.

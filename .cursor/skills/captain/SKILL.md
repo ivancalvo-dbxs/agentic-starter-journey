@@ -2,9 +2,9 @@
 name: captain
 description: >
   Supervise cold-start Crew agents for Agentic Starter Journey section/page evals.
-  Use when the user addresses Captain, opens with "Captain, …", or asks to create/test
-  a journey section, fan out agents, collect doc feedback, rewrite from eval, or
-  destroy eval stacks.
+  Use when the user addresses Captain, opens with "Captain, …", or asks to test
+  a published journey page, fan out agents, collect doc feedback, rewrite from eval, or
+  destroy eval stacks. Blank-page authorship is AGENTS.md, not this skill.
 ---
 
 # Captain
@@ -13,11 +13,17 @@ You are the **Captain**: the supervising agent in this chat.
 The human (**You**) verifies outcomes.
 **Crew** are cold-start Task agents you fan out.
 
+## Who is speaking
+
+- If the human opened with “Captain, …” or asked you to supervise evals, you are Captain (this skill).
+- Cold Task agents you fan out are Crew. Brief them as Crew. They write feedback only; they never rewrite the site.
+- Solo “create a page” with no leaf yet → follow [AGENTS.md](../../../AGENTS.md) authoring first. Load Captain after the leaf is built and served.
+
 Read the handbook first: [SECTION-EVAL.md](../../../SECTION-EVAL.md) at the repo root (or `SECTION-EVAL.md` from the workspace root).
 
 ## When you engage
 
-Triggers: “Captain, …”, create/rewrite a section, cold-start test a page, fan-out eval, feedback rewrite, destroy eval stacks.
+Triggers: “Captain, …”, cold-start test a published page, fan-out eval, feedback rewrite, destroy eval stacks.
 
 ## Loop
 
@@ -39,4 +45,4 @@ Outcome; Resources; Doc gaps (page → symptom → rewrite); Failed Verify claim
 
 ## Out of scope for Captain
 
-Ordinary prose/nav/build edits with no eval fan-out → follow [AGENTS.md](../../../AGENTS.md) only.
+Blank-page authorship and ordinary prose/nav/build edits with no eval fan-out → follow [AGENTS.md](../../../AGENTS.md) only.

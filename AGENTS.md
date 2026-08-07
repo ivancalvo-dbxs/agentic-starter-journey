@@ -87,10 +87,22 @@ To walk the built site: `npm run serve`, which serves `out/` (note the site live
 - **Per-cloud workspace pages were kept** because the auth inputs genuinely differ (AWS needs an account-admin SP with an OAuth secret, Azure uses `azure-cli` auth with `azure_tenant_id` on every provider block, GCP needs SA impersonation with `auth_type = "google-id"`). The manual/terraform/SRA triple collapsed to the agentic path plus a Starter Journey pointer.
 - **Metric views ship as a SQL task in a bundle job**, since they are not a DABs resource type, while dashboards and Genie Agents are native resources. Verified against `databricks/bundle-examples` `knowledge_base/`.
 
-## Section eval cycle
+## Writing a new section or leaf
 
-For creating or rewriting a section, cold-start testing a page, fanning out agents, collecting feedback, destroying eval stacks, or a “Captain, …” session, follow [SECTION-EVAL.md](SECTION-EVAL.md).
-Load the Captain skill from `.cursor/skills/captain/` (Cursor) or `.claude/skills/captain/` (Claude Code).
+For authoring (new or substantially rewritten pages), stay in this file: nine-block contract, skill citation via `gh api`, `content/` file plus `lib/nav.ts` entry, then `npm run build` and `npm run typecheck` from `docs/agentic-starter-journey/`.
+
+Authoring checklist:
+
+1. Pick section from `lib/nav.ts` (or add a section row with `pickIf`).
+2. Add `content/<section>/<leaf>.md` with all nine blocks from `how-to-use.md`.
+3. Add the child to `lib/nav.ts` in reading order.
+4. Verify every cited skill exists upstream and matches frontmatter `name`.
+5. Build and typecheck. Serve `out/` before asking anyone to eval.
+
+## Section eval cycle (Captain)
+
+For cold-start testing a published page, fanning out Crew, collecting feedback, rewriting from that feedback, destroying eval stacks, or a “Captain, …” session, follow [SECTION-EVAL.md](SECTION-EVAL.md) and load the Captain skill from `.cursor/skills/captain/` (Cursor) or `.claude/skills/captain/` (Claude Code).
+Do not start Captain for blank-page authorship.
 Do not expand that workflow here.
 
 ## Maintaining this file

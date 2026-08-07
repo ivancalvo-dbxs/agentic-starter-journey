@@ -4,7 +4,7 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 
 ## What this repo is
 
-A Next.js 16 + Tailwind 4 static site at `docs/agentic-journey/` (not the repo root, so all `npm` commands run from there). See [README.md](README.md) for the layout and how it differs from [Starter Journey](https://databricks-solutions.github.io/starter-journey/), from which it was structurally cloned.
+A Next.js 16 + Tailwind 4 static site at `docs/agentic-starter-journey/` (not the repo root, so all `npm` commands run from there). See [README.md](README.md) for the layout and how it differs from [Starter Journey](https://databricks-solutions.github.io/starter-journey/), from which it was structurally cloned.
 
 The audience is a coding agent, not a human. That is the constraint behind almost every content decision below.
 
@@ -17,7 +17,7 @@ Do not reintroduce site chrome.
 
 ## Writing rules for doc pages
 
-Every page follows the same nine-block contract, documented for readers in `docs/agentic-journey/content/how-to-use.md`: **Mental Model**, **Goal**, **Prerequisites**, **Skill**, **Inputs** (with a `Source` column saying human-provided vs agent-derived), **Run**, **Verify**, **Where this fails**, **Next**.
+Every page follows the same nine-block contract, documented for readers in `docs/agentic-starter-journey/content/how-to-use.md`: **Mental Model**, **Goal**, **Prerequisites**, **Skill**, **Inputs** (with a `Source` column saying human-provided vs agent-derived), **Run**, **Verify**, **Where this fails**, **Next**.
 
 - Verification is a runnable command plus its expected output. Never "confirm it looks right in the UI".
 - Prefer a check that would catch a *silent* failure over one that only catches an error: row counts and freshness over exit status, a masked-principal query over `SHOW POLICIES`, a metric-view-vs-raw-SQL reconciliation over "the view exists".
@@ -65,7 +65,7 @@ Content lives in `content/` as plain `.md`. Adding a page means adding the file 
 
 ## Verification before calling doc work done
 
-From `docs/agentic-journey/`:
+From `docs/agentic-starter-journey/`:
 
 ```bash
 npm run build       # static export plus the internal link and anchor check

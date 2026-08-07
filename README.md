@@ -1,4 +1,4 @@
-# Agentic Journey
+# Agentic Starter Journey
 
 Agent-facing runbooks that take a coding agent from an empty Databricks account to a deployed, bundle-defined project.
 
@@ -6,7 +6,7 @@ Every page is written for a machine reader: goal, required inputs, the skill to 
 
 ## What this is
 
-A Next.js static site at `docs/agentic-journey/`. A user points an agent (Claude Code, Codex, OpenCode, Cursor) at a page URL and asks for the outcome. The agent reads the page, collects the listed inputs from the user, invokes the named skill, and verifies the result.
+A Next.js static site at `docs/agentic-starter-journey/`. A user points an agent (Claude Code, Codex, OpenCode, Cursor) at a page URL and asks for the outcome. The agent reads the page, collects the listed inputs from the user, invokes the named skill, and verifies the result.
 
 The site is deliberately plain: single column, no sidebar, no navbar, no search. The landing page is a title, a tagline, a pointer to the page contract, and a numbered section table with pick-if criteria. Every other page ends with a next-page link and a link back to the contents.
 
@@ -21,7 +21,7 @@ The journey draws on two upstream skill libraries. Neither is vendored here.
 
 This repo is structurally cloned from [Starter Journey](https://databricks-solutions.github.io/starter-journey/), which teaches a human to set up Databricks by clicking through the UI. Same journey, different reader.
 
-| | Starter Journey | Agentic Journey |
+| | Starter Journey | Agentic Starter Journey |
 |---|---|---|
 | Reader | Human | Coding agent |
 | Execution | Person clicks through consoles and portals | Agent invokes a skill and runs CLI commands |
@@ -35,7 +35,7 @@ Where no agentic path exists, the page links the Starter Journey page and says p
 ## Running the site locally
 
 ```bash
-cd docs/agentic-journey
+cd docs/agentic-starter-journey
 npm install
 npm run dev
 ```
@@ -67,14 +67,14 @@ For ordinary edits to this repo (prose, nav, build), start at [AGENTS.md](AGENTS
 ## Repository layout
 
 ```
-agentic-journey/
+agentic-starter-journey/
 ├── AGENTS.md                      ← instructions for agents editing this repo
 ├── SECTION-EVAL.md                ← Captain handbook (You → Captain → Crew)
 ├── .cursor/skills/captain/        ← Captain skill (Cursor)
 ├── .claude/skills/captain/        ← Captain skill (Claude Code)
 ├── README.md
 ├── .github/workflows/deploy.yml   ← build and publish to GitHub Pages
-└── docs/agentic-journey/          ← Next.js project root
+└── docs/agentic-starter-journey/          ← Next.js project root
     ├── content/                   ← the journey pages (.md)
     ├── lib/nav.ts                 ← reading order and the landing page table
     ├── lib/content.ts             ← markdown to HTML at build time

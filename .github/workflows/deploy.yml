@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: docs/agentic-journey
+        working-directory: docs/agentic-starter-journey
     steps:
       - uses: actions/checkout@v6
 
@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: docs/agentic-journey/package-lock.json
+          cache-dependency-path: docs/agentic-starter-journey/package-lock.json
 
       - run: npm ci
 
@@ -48,7 +48,7 @@ jobs:
 
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: docs/agentic-journey/out
+          path: docs/agentic-starter-journey/out
 
   deploy:
     name: Deploy to GitHub Pages

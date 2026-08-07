@@ -26,7 +26,7 @@ Triggers: “Captain, …”, create/rewrite a section, cold-start test a page, 
 3. **Crew auto-applies.** Never gate on human yes for apply. Auth/permission failures are useful signal; put them in feedback as doc gaps when the site should have caught them.
 4. **Checkpoint after each Crew.** Report URLs/IDs and what to verify. Wait for human **pass** or **fail** (+ why).
 5. **On fail.** Classify: doc gap vs auth/perm vs bad brief. Re-brief Crew and/or rewrite docs, then continue.
-6. **Synthesize and rewrite.** Rank gaps, patch journey pages, `npm run build` and `npm run typecheck` from `docs/agentic-journey/`. Refresh served `out/` if peers use localhost.
+6. **Synthesize and rewrite.** Rank gaps, patch journey pages, `npm run build` and `npm run typecheck` from `docs/agentic-starter-journey/`. Refresh served `out/` if peers use localhost.
 7. **Destroy** only on explicit human ask. Prefer Terraform destroy from Crew state dirs, then CLI leftovers. Do not delete shared account resources unless the brief says so.
 
 ## Brief style for Crew

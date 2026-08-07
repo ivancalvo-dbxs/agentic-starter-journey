@@ -43,7 +43,7 @@ Do not force a full rebuild when the human already has upstream resources.
 3. **Fan out Crew.** Parallelize independent matrix cells (cloud × topology, or one page × N targets). Briefs stay short: entry URL, goal, credentials/profiles, human defaults, auto-apply, feedback path.
 4. **After each Crew, Captain checkpoints you.** You verify the real object (workspace, catalog, pipeline, DABs). Pass continues. Fail + why → Captain classifies (doc gap vs auth/perm vs bad brief) and re-briefs or rewrites.
 5. **Primary deliverable is doc feedback.** Each Crew writes a structured file. Resource creation proves the page; rewriting the page is the point.
-6. **Synthesize, then rewrite.** Captain ranks gaps, patches the section, runs `npm run build` and `npm run typecheck` from `docs/agentic-journey/`. Refresh the served `out/` if peers hit localhost.
+6. **Synthesize, then rewrite.** Captain ranks gaps, patches the section, runs `npm run build` and `npm run typecheck` from `docs/agentic-starter-journey/`. Refresh the served `out/` if peers hit localhost.
 7. **Leave stacks up** until you say destroy. Destroy only on explicit ask. Prefer Terraform destroy from Crew state dirs, then CLI cleanup of leftovers. Do not delete shared account resources (example: a pre-existing regional metastore) unless the brief says so.
 
 Auto-apply is intentional: auth and permission blockers surface faster when Crew is not waiting on yes/no for every apply.

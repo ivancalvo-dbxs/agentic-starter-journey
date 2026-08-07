@@ -49,11 +49,18 @@ The site opens at `http://localhost:3000/agentic-starter-journey/`.
 | `npm run typecheck` | TypeScript check. |
 | `npm run serve` | Serve the static export. |
 
+## Section eval (agents)
+
+If the task is to create a new section, cold-start test a page or feature, fan out agents, collect feedback, rewrite from that feedback, or destroy eval stacks, follow [SECTION-EVAL.md](SECTION-EVAL.md).
+
+For ordinary edits to this repo (prose, nav, build), start at [AGENTS.md](AGENTS.md).
+
 ## Repository layout
 
 ```
 agentic-journey/
 ├── AGENTS.md                      ← instructions for agents editing this repo
+├── SECTION-EVAL.md                ← cold-start test → feedback → rewrite → destroy
 ├── README.md
 ├── .github/workflows/deploy.yml   ← build and publish to GitHub Pages
 └── docs/agentic-journey/          ← Next.js project root
@@ -67,3 +74,4 @@ agentic-journey/
 ```
 
 See [AGENTS.md](AGENTS.md) before editing.
+See [SECTION-EVAL.md](SECTION-EVAL.md) before fanning out eval agents.

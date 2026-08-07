@@ -13,7 +13,7 @@ export default function DocPage({ page, next }: Props) {
   return (
     <>
       <Head>
-        <title>{`${page.title} - Agentic Journey`}</title>
+        <title>{`${page.title} - Agentic Starter Journey`}</title>
         {page.description && <meta name="description" content={page.description} />}
       </Head>
       {/* max-w-3xl, not 2xl: nearly every page carries a dense input or

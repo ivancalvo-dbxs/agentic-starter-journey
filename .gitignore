@@ -1,25 +1,25 @@
 # Dependencies
-docs/agentic-journey/node_modules
+docs/agentic-starter-journey/node_modules
 
 # Production
-docs/agentic-journey/out
+docs/agentic-starter-journey/out
 
 # Generated files
-docs/agentic-journey/.next
-docs/agentic-journey/next-env.d.ts
-docs/agentic-journey/tsconfig.tsbuildinfo
+docs/agentic-starter-journey/.next
+docs/agentic-starter-journey/next-env.d.ts
+docs/agentic-starter-journey/tsconfig.tsbuildinfo
 
 # Misc
 .DS_Store
 
-docs/agentic-journey/.env.local
-docs/agentic-journey/.env.development.local
-docs/agentic-journey/.env.test.local
-docs/agentic-journey/.env.production.local
+docs/agentic-starter-journey/.env.local
+docs/agentic-starter-journey/.env.development.local
+docs/agentic-starter-journey/.env.test.local
+docs/agentic-starter-journey/.env.production.local
 
-docs/agentic-journey/npm-debug.log*
-docs/agentic-journey/yarn-debug.log*
-docs/agentic-journey/yarn-error.log*
+docs/agentic-starter-journey/npm-debug.log*
+docs/agentic-starter-journey/yarn-debug.log*
+docs/agentic-starter-journey/yarn-error.log*
 
 # Local agent tooling (ignore by default; commit Captain skill for peers)
 .superpowers/

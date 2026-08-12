@@ -16,6 +16,7 @@ A new Git repo containing a valid `databricks.yml` with dev, staging, and produc
 
 ## Prerequisites
 
+- Auth surface: `workspace`.
 - [Infra Setup](/docs/01-infra-setup/) complete: workspaces, a metastore, catalogs with medallion schemas, and governed object storage access.
 - A configured Databricks CLI profile that reaches the dev workspace.
 - A deployment service principal for staging and production (created during Infra Setup). Staging and prod run as this, not as a person.
@@ -42,6 +43,46 @@ Initialize locally with `git init`, and let the user decide on the remote.
 :::
 
 ## Run
+
+### 0. Auth precheck
+
+Refuse to continue if the brief or prior pages do not name all of these:
+
+- Databricks account id
+- Workspace id
+- Workspace host (`https://<deployment>.cloud.databricks.com`)
+- Workspace CLI profile name
+
+```bash
+databricks auth profiles
+
+databricks auth describe --profile <workspace-profile> -o json \
+  | jq '{host, account_id}'
+
+databricks current-user me --profile <workspace-profile> -o json \
+  | jq '{id, userName}'
+
+databricks metastores current --profile <workspace-profile> -o json \
+  | jq '{workspace_id, metastore_id}'
+```
+
+Expected:
+
+- `<workspace-profile>` shows `Valid` = `YES` in `auth profiles`.
+- `auth describe` `host` equals the named workspace host, and `account_id` equals the named Databricks account id.
+- `current-user me` succeeds with no auth error.
+- `metastores current` `workspace_id` equals the named workspace id.
+
+On any failure: print **blocked: auth preflight failed**, list the failing check, give the human the remediation below, and stop.
+Do not invoke skills, run `bundle validate`, or deploy until auth is green.
+
+| Check failed | Human remediation |
+|---|---|
+| Missing named account id, workspace id, host, or profile | Ask the human for all four before continuing |
+| Profile `Valid=NO` or auth error on describe | `databricks auth login --host <workspace-host> --profile <workspace-profile>` (or refresh the SP OAuth secret on the profile) |
+| Host or account id mismatch on `auth describe` | Re-login the profile against the named host; confirm the Databricks account id in the account console |
+| `workspace_id` mismatch on `metastores current` | `databricks account workspaces list --profile <account-profile> -o json` and align id with the named host |
+| `current-user me` fails after profile is Valid | Workspace admin assigns the user or SP to the workspace |
 
 ### 1. Structure
 
@@ -156,6 +197,11 @@ A `FAIL` on staging or production here is usually the service principal not exis
 
 | Symptom | Cause | Fix |
 |---|---|---|
+| Auth precheck blocked: missing named targets | Brief only has a workspace URL or display name | Collect Databricks account id, workspace id, workspace host, and workspace profile name before Run |
+| Profile `Valid=NO` | Expired OAuth or SP secret | `databricks auth login --host <workspace-host> --profile <workspace-profile>` or rotate the SP secret |
+| Account id or host mismatch on `auth describe` | Profile points at the wrong account or workspace | Re-login against the named host; confirm account id in the account console |
+| `workspace_id` mismatch on `metastores current` | Wrong profile or wrong workspace in the brief | List workspaces and align id, host, and profile |
+| `current-user me` fails with Valid profile | Principal not on the workspace | Workspace admin assigns the user or SP |
 | `unknown command "bundle"` | Legacy pip CLI on PATH | Install the modern Databricks CLI |
 | `cannot resolve variable` | Variable used in a resource but not declared in `databricks.yml` | Declare it under `variables:` |
 | Validate passes on dev, fails on prod | Target missing a variable value, or the SP has no workspace access | Set the variable per target; assign the SP to the workspace |

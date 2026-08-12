@@ -102,6 +102,7 @@ Authoring checklist:
 ## Section eval cycle (Captain)
 
 For cold-start testing a published page, fanning out Crew, collecting feedback, rewriting from that feedback, destroying eval stacks, or a “Captain, …” session, follow [SECTION-EVAL.md](SECTION-EVAL.md) and load the Captain skill from `.cursor/skills/captain/` (Cursor) or `.claude/skills/captain/` (Claude Code).
+Captain must preflight auth (named profiles plus matching account ids; workspace id when the page requires it) and must not fan out Crew until preflight is green.
 Do not start Captain for blank-page authorship.
 Do not expand that workflow here.
 

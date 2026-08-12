@@ -25,7 +25,7 @@ Captain skill (load in the parent chat):
 | Role | Who | Job |
 |---|---|---|
 | **You** | Human developer / content author | State the goal. Verify each Crew outcome (workspace config, pipeline + DABs, etc.). Pass/fail. Decide destroy at the end. |
-| **Captain** | Parent agent in this chat | Mission plan → fan out Crew → pause for your verify → recover on fail → synthesize feedback → rewrite site. |
+| **Captain** | Parent agent in this chat | Mission plan → auth preflight → fan out Crew → pause for your verify → recover on fail → synthesize feedback → rewrite site. |
 | **Crew** | Cold-start Task agents | No shared context. Follow the published site only. Apply without plan approval. Write feedback files. |
 
 Session opener example:
@@ -39,6 +39,11 @@ Flexible by design. A run may cover a whole section (example: Infra Setup end-to
 Put existing assets and the exact goal in the Captain brief / Crew briefs.
 Do not force a full rebuild when the human already has upstream resources.
 
+Briefs must name resolved targets, not ambiguous URLs or bucket names alone.
+Required when the page auth surface includes them: Databricks account id and matching account CLI profile; workspace id, host, and workspace CLI profile; cloud account id and cloud CLI profile when cloud IAM, object storage, or cloud provisioning is in scope.
+A brief that only names a workspace URL or S3 bucket without account ids and profiles is incomplete.
+Captain refuses fan-out until the brief is complete and preflight is green.
+
 ## When the topic already has a leaf
 
 Do not create a duplicate slug or parallel page.
@@ -50,13 +55,15 @@ If the goal was “create” and the leaf already exists, state that in the miss
 
 1. **Serve this repo’s published site.** From `docs/agentic-starter-journey/`: `npm run build && npm run serve`. Before fanning out Crew, confirm the entry URL is this site (Agentic Starter Journey title/copy), not another app on the same port. If wrong, free the port and re-serve `out/`, or use the deployed Pages URL. Crew starts at `http://localhost:3000/agentic-starter-journey/` (or Pages). They follow the pages under test, not `content/` in git.
 2. **Captain states a mission plan**, then proceeds unless you interrupt. No terraform plan/apply approvals from you.
-3. **Fan out Crew.** Parallelize independent matrix cells (cloud × topology, or one page × N targets). Briefs stay short: entry URL, goal, credentials/profiles, human defaults, auto-apply, feedback path.
-4. **After each Crew, Captain checkpoints you.** You verify the real object (workspace, catalog, pipeline, DABs). Pass continues. Fail + why → Captain classifies (doc gap vs auth/perm vs bad brief) and re-briefs or rewrites.
-5. **Primary deliverable is doc feedback.** Each Crew writes a structured file. Resource creation proves the page; rewriting the page is the point.
-6. **Synthesize, then rewrite.** Captain ranks gaps, patches the section, runs `npm run build` and `npm run typecheck` from `docs/agentic-starter-journey/`. Refresh the served `out/` if peers hit localhost.
-7. **Leave stacks up** until you say destroy. Destroy only on explicit ask. Prefer Terraform destroy from Crew state dirs, then CLI cleanup of leftovers. Do not delete shared account resources (example: a pre-existing regional metastore) unless the brief says so.
+3. **Auth preflight (Captain gate).** Before fan-out, Captain infers the auth surface from the page(s) under test (`account` | `workspace` | `both`). Captain requires named resolved targets in the mission: Databricks account id and matching account CLI profile; workspace id, host, and workspace CLI profile when the surface includes workspace; cloud account id and cloud CLI profile when cloud IAM, object storage, or cloud provisioning is in scope. Captain runs the live checks itself (profile Valid=YES, identity calls, account id match). If any check fails: report **blocked: auth preflight failed**, list which check failed, give copy-paste remediation commands, and **do not** start Crew. Wait for you to fix credentials and confirm before retrying. Missing, expired, or mismatched auth is a Captain gate failure, not a useful Crew signal.
+4. **Fan out Crew.** Only after preflight is green. Parallelize independent matrix cells (cloud × topology, or one page × N targets). Briefs stay short: entry URL, goal, resolved profiles and account ids, human defaults, auto-apply, feedback path.
+5. **After each Crew, Captain checkpoints you.** You verify the real object (workspace, catalog, pipeline, DABs). Pass continues. Fail + why → Captain classifies (doc gap vs permission vs bad brief) and re-briefs or rewrites.
+6. **Primary deliverable is doc feedback.** Each Crew writes a structured file. Resource creation proves the page; rewriting the page is the point.
+7. **Synthesize, then rewrite.** Captain ranks gaps, patches the section, runs `npm run build` and `npm run typecheck` from `docs/agentic-starter-journey/`. Refresh the served `out/` if peers hit localhost.
+8. **Leave stacks up** until you say destroy. Destroy only on explicit ask. Prefer Terraform destroy from Crew state dirs, then CLI cleanup of leftovers. Do not delete shared account resources (example: a pre-existing regional metastore) unless the brief says so.
 
-Auto-apply is intentional: auth and permission blockers surface faster when Crew is not waiting on yes/no for every apply.
+Auto-apply is intentional: permission blockers during apply surface faster when Crew is not waiting on yes/no for every apply.
+Auth preflight happens before fan-out so Crew never burns tokens on expired SSO or ambiguous targets.
 
 ## Feedback file shape
 

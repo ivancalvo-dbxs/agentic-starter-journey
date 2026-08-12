@@ -25,6 +25,7 @@ One workspace per environment in the chosen topology, plus a Unity Catalog metas
 ## Prerequisites
 
 - [Pre-requisites](/docs/01-infra-setup/prerequisites/) passing, including `terraform version` at 1.9.0 or later.
+- Auth surface: account (plus cloud CLI for the target cloud).
 - An authenticated cloud CLI session with permission to create IAM roles, object storage, and (classic only) VPC or VNet resources.
 - A Databricks account-admin principal: OAuth SP on AWS, `azure-cli` on Azure with matching tenant (below), or service account impersonation on GCP.
 
@@ -74,6 +75,36 @@ Resolve account ID ↔ AAD tenant ID ↔ subscription ID before plan. Refuse to 
 :::
 
 ## Run
+
+### 0. Auth precheck
+
+Refuse if the human did not name all of these: Databricks account id, Databricks account CLI profile, target cloud (`aws`, `azure`, or `gcp`), cloud account id, cloud CLI profile.
+Do not invoke the skill until every named target is present.
+
+Run live checks:
+
+```bash
+databricks auth profiles
+databricks account workspaces list --profile <account-profile> -o json | jq 'length'
+aws sts get-caller-identity --profile <aws-profile>     # AWS: Account must equal named cloud account id
+az account show --profile <azure-profile>                  # Azure: tenant + subscription must match named ids
+gcloud auth list                                           # GCP: active account must match named project
+```
+
+Compare the live cloud identity to the human-named cloud account id.
+When the account API returns an account id, compare it to the human-named Databricks account id.
+
+On any failure, print **blocked: auth preflight failed**, name the failing check, give the human these remediations, and **stop**.
+Do not invoke the skill.
+Do not run Terraform.
+
+| Check failed | Human must run |
+|---|---|
+| Account profile missing or `Valid=NO` | `databricks auth login --host <account-host> --profile <account-profile>` or fix M2M SP secret and Account admin role |
+| `account workspaces list` fails | Confirm Account admin on the SP; regenerate OAuth secret (AWS) |
+| Cloud CLI not authenticated | `aws sso login --profile <aws-profile>` / `az login --tenant <tenant>` / `gcloud auth login` |
+| Cloud account id mismatch | Pick the profile whose account id matches the human-named cloud account id |
+| Databricks account id mismatch | Fix the account profile or the human-named account id before continuing |
 
 ### 1. Pre-flight
 
@@ -170,6 +201,10 @@ On Azure, workspace admin for the creator is often automatic via Azure AD. `data
 
 | Symptom | Cause | Fix |
 |---|---|---|
+| **blocked: auth preflight failed** before Run | Missing named account id, account profile, cloud account id, or cloud profile | Ask the human for every required target; rerun ### 0 |
+| Account profile `Valid=NO` or account list fails | Expired login or wrong SP secret | `databricks auth login --host <account-host> --profile <account-profile>` or fix M2M and Account admin role |
+| Cloud STS / `az account show` fails or account id mismatch | Wrong or expired cloud profile | `aws sso login --profile <aws-profile>` / `az login --tenant <tenant>` / `gcloud auth login`; pick the profile that matches the named cloud account id |
+| Skill invoked despite red precheck | Agent skipped ### 0 | Always run ### 0 first; stop on any failure |
 | `400 BAD_REQUEST: Failed to get oauth access token` (AWS) | SP is not an account admin, or the secret is wrong | Confirm the Account admin role on the Roles tab, regenerate the secret |
 | Provider hits the wrong host | `DATABRICKS_HOST` or `DATABRICKS_TOKEN` set in the shell | `unset` both, re-run |
 | `PERMISSION_DENIED: User is not an owner of Metastore` | The SP cannot create catalogs | Add the SP to the metastore admin group |

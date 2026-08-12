@@ -20,6 +20,7 @@ One catalog per environment, each backed by its own object storage, with medalli
 ## Prerequisites
 
 - [Workspaces](/docs/01-infra-setup/workspaces/) complete, with a metastore in the region assigned to the workspace.
+- Auth surface: both (account profile, workspace profile, and cloud CLI for the target cloud).
 - Account-admin auth that can run `databricks account metastores list` and `databricks account groups list`.
 - Account-level groups exist. Unity Catalog cannot see workspace-local groups.
 - Deploy principal has effective `CREATE_CATALOG`, `CREATE_STORAGE_CREDENTIAL`, and `CREATE_EXTERNAL_LOCATION` on the chosen metastore (shared metastores often lack these until granted).
@@ -65,6 +66,39 @@ The skill refuses a shared one: shared storage across environments means a dev j
 :::
 
 ## Run
+
+### 0. Auth precheck
+
+Refuse if the human did not name all of these: Databricks account id, Databricks account CLI profile, workspace host, workspace id, workspace CLI profile, target cloud (`aws`, `azure`, or `gcp`), cloud account id, cloud CLI profile.
+Do not invoke the skill until every named target is present.
+
+Run live checks:
+
+```bash
+databricks auth profiles
+databricks account workspaces list --profile <account-profile> -o json | jq 'length'
+databricks metastores current --profile <workspace-profile> -o json | jq '{workspace_id, metastore_id, name}'
+databricks current-user me --profile <workspace-profile> -o json | jq '{userName, workspace_id}'
+aws sts get-caller-identity --profile <aws-profile>     # AWS: Account must equal named cloud account id
+az account show --profile <azure-profile>                  # Azure: tenant + subscription must match named ids
+gcloud auth list                                           # GCP: active account must match named project
+```
+
+Confirm the workspace profile reaches the named host and that `workspace_id` matches the human-named workspace id.
+Compare live cloud identity and Databricks account id to the human-named values when obtainable.
+
+On any failure, print **blocked: auth preflight failed**, name the failing check, give the human these remediations, and **stop**.
+Do not invoke the skill.
+Do not run Terraform.
+
+| Check failed | Human must run |
+|---|---|
+| Account profile missing or `Valid=NO` | `databricks auth login --host <account-host> --profile <account-profile>` or fix M2M SP secret and Account admin role |
+| `account workspaces list` fails | Confirm Account admin on the SP; regenerate OAuth secret (AWS) |
+| `metastores current` or `current-user me` fails | `databricks auth login --host <workspace-host> --profile <workspace-profile>` |
+| Workspace id mismatch | Fix workspace profile or human-named workspace id |
+| Cloud CLI not authenticated | `aws sso login --profile <aws-profile>` / `az login --tenant <tenant>` / `gcloud auth login` |
+| Cloud account id mismatch | Pick the profile whose account id matches the human-named cloud account id |
 
 ### 1. Check the metastore before touching it
 
@@ -193,6 +227,11 @@ A failure here with the metadata all correct usually means the storage credentia
 
 | Symptom | Cause | Fix |
 |---|---|---|
+| **blocked: auth preflight failed** before Run | Missing named account id, profiles, workspace host/id, or cloud account id | Ask the human for every required target; rerun ### 0 |
+| Workspace profile fails `metastores current` | Expired workspace login or wrong host | `databricks auth login --host <workspace-host> --profile <workspace-profile>` |
+| Workspace id mismatch | Wrong workspace profile | Fix profile or human-named workspace id |
+| Cloud STS fails or account id mismatch | Expired or wrong cloud profile | `aws sso login --profile <aws-profile>` / `az login --tenant <tenant>` / `gcloud auth login` |
+| Skill invoked despite red precheck | Agent skipped ### 0 | Always run ### 0 first; stop on any failure |
 | `PERMISSION_DENIED: User is not an owner of Metastore` | Caller cannot create catalogs | Grant CREATE_* on the metastore, or add them to the metastore admin group |
 | `No metastore assigned` | Workspace not attached to a metastore | Account admin assigns or creates the regional metastore, then retry |
 | Catalog created, admins cannot see it | A service principal created and therefore owns it | Transfer owner to the account group after schemas exist; grant `ALL_PRIVILEGES` and `MANAGE` as needed |

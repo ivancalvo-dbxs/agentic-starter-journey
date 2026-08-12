@@ -16,6 +16,7 @@ Data from the source lands in a bronze Delta table in Unity Catalog, governed an
 
 ## Prerequisites
 
+- Auth surface: `workspace`.
 - [Project repo](/docs/02-databricks-projects/project-repo/) set up: a Git repo with a `databricks.yml` bundle and a dev target.
 - A configured Databricks CLI profile that reaches the dev workspace.
 - [Cloud Object Storage access](/docs/01-infra-setup/cloud-object-storage/) complete if the source is files in cloud storage (the source path must sit inside an external location).
@@ -43,6 +44,46 @@ Per-path inputs:
 | Zerobus (near real-time) | Target UC table, serialization (JSON or Protobuf), language for the client | Human |
 
 ## Run
+
+### 0. Auth precheck
+
+Refuse to continue if the brief or prior pages do not name all of these:
+
+- Databricks account id
+- Workspace id
+- Workspace host (`https://<deployment>.cloud.databricks.com`)
+- Workspace CLI profile name
+
+```bash
+databricks auth profiles
+
+databricks auth describe --profile <workspace-profile> -o json \
+  | jq '{host, account_id}'
+
+databricks current-user me --profile <workspace-profile> -o json \
+  | jq '{id, userName}'
+
+databricks metastores current --profile <workspace-profile> -o json \
+  | jq '{workspace_id, metastore_id}'
+```
+
+Expected:
+
+- `<workspace-profile>` shows `Valid` = `YES` in `auth profiles`.
+- `auth describe` `host` equals the named workspace host, and `account_id` equals the named Databricks account id.
+- `current-user me` succeeds with no auth error.
+- `metastores current` `workspace_id` equals the named workspace id.
+
+On any failure: print **blocked: auth preflight failed**, list the failing check, give the human the remediation below, and stop.
+Do not invoke skills, run `bundle validate`, or deploy until auth is green.
+
+| Check failed | Human remediation |
+|---|---|
+| Missing named account id, workspace id, host, or profile | Ask the human for all four before continuing |
+| Profile `Valid=NO` or auth error on describe | `databricks auth login --host <workspace-host> --profile <workspace-profile>` (or refresh the SP OAuth secret on the profile) |
+| Host or account id mismatch on `auth describe` | Re-login the profile against the named host; confirm the Databricks account id in the account console |
+| `workspace_id` mismatch on `metastores current` | `databricks account workspaces list --profile <account-profile> -o json` and align id with the named host |
+| `current-user me` fails after profile is Valid | Workspace admin assigns the user or SP to the workspace |
 
 ### 1. Pick the path
 
@@ -119,6 +160,11 @@ For Zerobus, also confirm the client received acknowledgments:
 
 | Symptom | Cause | Fix |
 |---|---|---|
+| Auth precheck blocked: missing named targets | Brief only has a workspace URL or display name | Collect Databricks account id, workspace id, workspace host, and workspace profile name before Run |
+| Profile `Valid=NO` | Expired OAuth or SP secret | `databricks auth login --host <workspace-host> --profile <workspace-profile>` or rotate the SP secret |
+| Account id or host mismatch on `auth describe` | Profile points at the wrong account or workspace | Re-login against the named host; confirm account id in the account console |
+| `workspace_id` mismatch on `metastores current` | Wrong profile or wrong workspace in the brief | List workspaces and align id, host, and profile |
+| `current-user me` fails with Valid profile | Principal not on the workspace | Workspace admin assigns the user or SP |
 | `Cannot create streaming table from batch query` (Auto Loader) | `FROM read_files(...)` instead of `FROM STREAM read_files(...)` | Add `STREAM` |
 | `Column not found` at ingest (Auto Loader) | `schemaHints` disagree with the files | Sample the source with `read_files` and align the hints |
 | Lakeflow Connect pipeline stuck `INITIALIZING` on serverless | Cold start | Normal, takes a few minutes. Do not kill it. |

@@ -12,6 +12,9 @@ docs/agentic-starter-journey/tsconfig.tsbuildinfo
 # Misc
 .DS_Store
 
+# Local Captain / Crew eval artifacts (feedback, TF state, stacks)
+.local-eval/
+
 docs/agentic-starter-journey/.env.local
 docs/agentic-starter-journey/.env.development.local
 docs/agentic-starter-journey/.env.test.local

@@ -32,6 +32,12 @@ A storage credential plus a **read-only** external location so Databricks can li
 Read its `SKILL.md`, then the cloud file (`AWS.md` / `AZURE.md` / `GCP.md`).
 It writes the cloud IAM side and the Unity Catalog side together, then stops for plan review unless the brief already approved apply.
 
+The skill's AWS/Azure/GCP recipes center on **write-capable** metastore or catalog managed buckets (`PutObject` / `DeleteObject` and full UC templates).
+This page's goal is narrower: **connect an existing path read-only**.
+Use the skill for trust policy, ExternalId, and self-assume gotchas.
+Narrow the IAM actions yourself to read-only on the path, and set `databricks_external_location.read_only = true`.
+Do not copy a write-capable bucket template unchanged.
+
 ## Hard rule: read-only
 
 This page always creates a **read-only** external location (`read_only = true`).
@@ -45,9 +51,9 @@ Do not flip the location to read-write here.
 | Input | Source | How to obtain |
 |---|---|---|
 | Storage path | Human | Exact URI: `s3://bucket/prefix/`, `abfss://container@account.dfs.core.windows.net/prefix/`, or `gs://bucket/prefix/`. Ask for the full path, not just the bucket name. |
-| Which groups need read access | Human | Account-level groups. Grant `READ FILES` only. |
+| Which groups need read access | Human | Account-level groups. Grant `READ FILES` only. If the human omits groups (cold-start / eval brief), fall back to `account users`, grant `READ FILES` only, and log that the human did not name a group. |
 | Cloud IAM identity | Skill-derived unless reusing | Default: skill creates the IAM role (AWS), Access Connector (Azure), or service account (GCP) with **read** permissions on the path. Only ask for an existing ARN/identity when reusing. |
-| Credential and location names | You derive | From a ≤3-option naming pick, or from the human's existing names. Patterns like `<prefix>_cred_<purpose>` / `<prefix>_ext_<purpose>` (underscores). |
+| Credential and location names | You derive | Prefer a ≤3-option naming pick when a human is present. If the brief already supplies names, or no human picker is available (cold-start Crew), use `<prefix>_cred_<purpose>` / `<prefix>_ext_<purpose>` (underscores) and record the choice. Do not stall waiting for a pick. |
 
 :::warning
 An external location must not overlap another one, and must not sit inside a catalog's managed storage root.
@@ -74,7 +80,10 @@ az account show --profile <azure-profile>                  # Azure: tenant + sub
 gcloud auth list                                           # GCP: active account must match named project
 ```
 
-Confirm the workspace profile reaches the named host and that `workspace_id` matches the human-named workspace id.
+Prefer `metastores current.workspace_id` (and/or account `workspaces get`) as the workspace-id check.
+Treat `workspace_id: null` on `current-user me` as non-blocking when the workspace host matches and `metastores current` returns the named workspace id (common for SP oauth-m2m).
+
+Confirm the workspace profile reaches the named host and that the live workspace id matches the human-named workspace id.
 Compare live cloud identity and Databricks account id to the human-named values when obtainable.
 
 On any failure, print **blocked: auth preflight failed**, name the failing check, give the human these remediations, and **stop**.
@@ -105,8 +114,8 @@ Do not create a second overlapping location.
 
 ### 2. Naming (new credential + location)
 
-Present ≤3 naming options for the credential and the external location.
-Wait for a pick before writing HCL.
+When a human is present, present ≤3 naming options for the credential and the external location, then wait for a pick before writing HCL.
+If the brief already supplies names, or no human picker is available (cold-start Crew), use `<prefix>_cred_<purpose>` / `<prefix>_ext_<purpose>` and record the choice.
 Do not invent a new bucket unless the human asked for one.
 This page's default is connect-to-existing path.
 
@@ -137,6 +146,8 @@ databricks external-locations get <location-name> --profile <workspace-profile> 
 ```
 
 Expected: `url` matches the intended URI and `read_only` is `true`.
+The hard rule applies to the **external location** `read_only` flag (and read-scoped IAM actions), not the storage credential object's `read_only` field.
+A credential may report `read_only: false` while the location is correctly `read_only: true`.
 
 ```bash
 # Grants are READ FILES on groups only
@@ -163,7 +174,20 @@ Do not use `databricks external-locations validate` (missing on CLI 1.1.0) or `l
 
 Expected: `SUCCEEDED`.
 Empty listing with `SUCCEEDED` is different from a permission error.
-A write attempt (for example `COPY INTO` or `CREATE TABLE ... LOCATION`) must fail while `read_only` is true.
+
+Prove write is denied while `read_only` is true with a **path-direct** probe (avoids catalog `USE CATALOG` failures that mask the read-only check):
+
+```bash
+databricks api post /api/2.0/sql/statements --profile <workspace-profile> --json '{
+  "warehouse_id": "<warehouse-id>",
+  "statement": "CREATE TABLE delta.`<storage-path>/_write_probe` AS SELECT 1 AS n",
+  "wait_timeout": "50s"
+}' | jq -r '.status.state, .status.error.message // empty'
+```
+
+Expected: failure mentioning a read-only external location (for example `User cannot write to a read-only external location <name>`).
+Do not use catalog-scoped `CREATE TABLE ... LOCATION` as the first write probe; it can fail on catalog privileges before testing the location.
+Do not leave probe objects behind on a successful write (that would mean the location was not read-only).
 
 ## Where this fails
 
@@ -179,6 +203,7 @@ A write attempt (for example `COPY INTO` or `CREATE TABLE ... LOCATION`) must fa
 | `PERMISSION_DENIED` creating the credential | Caller lacks `CREATE STORAGE CREDENTIAL` on the metastore | Metastore admin grants it, or runs this step |
 | Location works for the creator only | Service principal owns it, no grants issued | Grant `READ FILES` to the consuming groups and `MANAGE` to the admin group |
 | Write succeeds against a "read" path | External location created without `read_only = true` | Recreate or update the location with `read_only = true`; do not grant `WRITE FILES` |
+| Write probe fails on `USE CATALOG` before testing read-only | Catalog-scoped `CREATE TABLE ... LOCATION` used as the probe | Prefer path-direct `CREATE TABLE delta.\`<path>/_write_probe\` ...`; expected message is read-only external location |
 | Azure: `AuthorizationFailed` on role assignment | Access Connector missing RBAC write rights | Grant User Access Administrator or Owner, assign `Storage Blob Data Reader` for read-only, then retry |
 
 ## Next
